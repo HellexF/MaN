@@ -3,7 +3,9 @@ package com.example.man;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,17 +43,42 @@ public class MobileLoginActivity extends AppCompatActivity {
         });
 
         mobileEdit = findViewById(R.id.mobile_edit);
-        // 用户聚焦时不显示提醒文字
-        mobileEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        // 监听输入框文字变化
+        mobileEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    mobileEdit.setHint("");
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // 当输入框中有文字时显示清除图标，没有文字时隐藏清除图标
+                if (s.length() > 0) {
+                    Drawable icon = getResources().getDrawable(R.drawable.clear_icon);
+                    icon.setBounds(0, 0, 60, 60);
+                    mobileEdit.setCompoundDrawables(null, null, icon, null);
+                    mobileEdit.setCompoundDrawablePadding(14);
+                    // 监听清除图标的点击事件
+                    mobileEdit.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            if (event.getAction() == MotionEvent.ACTION_UP) {
+                                int drawableRightStart = mobileEdit.getRight() - mobileEdit.getPaddingRight() - icon.getBounds().width();
+                                if (event.getRawX() >= drawableRightStart) {
+                                    mobileEdit.setText("");
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    });
                 } else {
-                    if (TextUtils.isEmpty(mobileEdit.getText())) {
-                        mobileEdit.setHint("请输入手机号");
-                    }
+                    mobileEdit.setCompoundDrawables(null, null, null, null);
+                    mobileEdit.setOnTouchListener(null);
                 }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
             }
         });
         // 设置回车键监听器
