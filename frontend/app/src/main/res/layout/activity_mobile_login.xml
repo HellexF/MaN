@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_login_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,28 +20,17 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.95" />
 
-    <Button
-        android:id="@+id/mobile_login_return_button"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:background="@android:color/transparent"
-        android:stateListAnimator="@null"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="14dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/mobile_login_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="登录/注册"
+        android:text="@string/mobile_login_text"
         android:textColor="@android:color/black"
         android:textSize="24sp"
         android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/mobile_login_return_button" />
+        android:layout_marginTop="62dp" />
 
     <EditText
         android:id="@+id/mobile_edit"
@@ -48,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:background="@drawable/input_text"
-        android:hint="请输入手机号"
+        android:hint="@string/mobile_edit_text"
         android:inputType="text"
         android:textColor="#bbbec5"
         android:textCursorDrawable="@drawable/cursor_color"
@@ -64,11 +54,24 @@
         android:layout_marginTop="25dp"
         android:background="@drawable/next_button"
         android:stateListAnimator="@null"
-        android:text="下一步"
+        android:text="@string/next_button_text"
         android:textSize="16sp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
         app:layout_constraintTop_toBottomOf="@id/mobile_edit" />
+
+    <Button
+        android:id="@+id/mobile_login_return_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/return_button"
+        android:text="@string/return_button_text"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toStartOf="@id/guideline_right"
+        app:layout_constraintStart_toStartOf="@id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@id/mobile_next_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
