@@ -35,9 +35,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MobileLoginActivity extends AppCompatActivity {
-    ConstraintLayout layout;
     private Button returnButton;
+    private Button nextButton;
     private EditText mobileEdit;
+    private TextView mobileErrorText;
 
     // 获取ApiService实例
     ApiService apiService = ApiClient.getClient().create(ApiService.class);
@@ -47,11 +48,9 @@ public class MobileLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_login);
 
-        // 设置返回按钮的ICON
+        mobileErrorText = findViewById(R.id.mobile_error_text);
+
         returnButton = findViewById(R.id.mobile_login_return_button);
-        // Drawable icon = getResources().getDrawable(R.drawable.return_icon);
-        // icon.setBounds(0, 0, 70, 70);
-        // returnButton.setCompoundDrawables(icon, null, null, null);
         // 设置返回按钮的跳转
         returnButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,68 +60,17 @@ public class MobileLoginActivity extends AppCompatActivity {
             }
         });
 
-        mobileEdit = findViewById(R.id.mobile_edit);
-        // 监听输入框文字变化
-        mobileEdit.addTextChangedListener(new TextWatcher() {
+        nextButton = findViewById(R.id.mobile_next_button);
+        // 设置下一步按钮的跳转
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // 当输入框中有文字时显示清除图标，没有文字时隐藏清除图标
-                if (s.length() > 0) {
-                    Drawable icon = getResources().getDrawable(R.drawable.clear_icon);
-                    icon.setBounds(0, 0, 60, 60);
-                    mobileEdit.setCompoundDrawables(null, null, icon, null);
-                    mobileEdit.setCompoundDrawablePadding(14);
-                    // 监听清除图标的点击事件
-                    mobileEdit.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View v, MotionEvent event) {
-                            if (event.getAction() == MotionEvent.ACTION_UP) {
-                                int drawableRightStart = mobileEdit.getRight() - mobileEdit.getPaddingRight() - icon.getBounds().width();
-                                if (event.getRawX() >= drawableRightStart) {
-                                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                                    imm.showSoftInput(mobileEdit, InputMethodManager.SHOW_IMPLICIT);
-                                    mobileEdit.setText("");
-                                    return true;
-                                }
-                            }
-                            return false;
-                        }
-                    });
+            public void onClick(View v) {
+                Boolean match = Regex.isValidPhoneNumber(mobileEdit.getText().toString());
+                if(!match) {
+                    mobileErrorText.setVisibility(TextView.VISIBLE);
                 } else {
-                    mobileEdit.setCompoundDrawables(null, null, null, null);
-                    mobileEdit.setOnTouchListener(null);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-        // 设置回车键监听器
-        mobileEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
-
-                    // 匹配手机号
-                    Boolean match = Regex.isValidPhoneNumber(mobileEdit.getText().toString());
-
-                    // 隐藏键盘
-                    hideKeyboardAndClearFocus();
-                    // 使 EditText 失去焦点
-                    mobileEdit.clearFocus();
-
-                    if(!match) {
-                        Toast.makeText(MobileLoginActivity.this, "请输入正确的手机号", Toast.LENGTH_LONG).show();
-                        return false;
-                    }
-
-                    Call<CheckPhoneNumberAvailableResponse> call = apiService.checkPhoneNumberAvailable(new PhoneNumber("1234567890"));
+                    mobileErrorText.setVisibility(TextView.GONE);
+                    Call<CheckPhoneNumberAvailableResponse> call = apiService.checkPhoneNumberAvailable(new PhoneNumber(mobileEdit.getText().toString()));
                     call.enqueue(new Callback<CheckPhoneNumberAvailableResponse>() {
                         @Override
                         public void onResponse(Call<CheckPhoneNumberAvailableResponse> call, Response<CheckPhoneNumberAvailableResponse> response) {
@@ -157,22 +105,75 @@ public class MobileLoginActivity extends AppCompatActivity {
                             Toast.makeText(MobileLoginActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
                         }
                     });
-
-                    return true;
                 }
-                return false;
             }
         });
-        // 设置焦点变化监听器
-        mobileEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+        mobileEdit = findViewById(R.id.mobile_edit);
+        // 监听输入框文字变化
+        mobileEdit.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // 当输入框中有文字时显示清除图标，没有文字时隐藏清除图标
+                if (s.length() > 0) {
+                    Drawable icon = getResources().getDrawable(R.drawable.clear_icon);
+                    icon.setBounds(0, 0, 60, 60);
+                    mobileEdit.setCompoundDrawables(null, null, icon, null);
+                    mobileEdit.setCompoundDrawablePadding(14);
+                    // 监听清除图标的点击事件
+                    mobileEdit.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                                int drawableRightStart = mobileEdit.getRight() - mobileEdit.getPaddingRight() - icon.getBounds().width();
+                                if (event.getRawX() >= drawableRightStart) {
+                                    mobileEdit.setText("");
+                                    mobileEdit.requestFocus();
+                                    // 显示键盘
+                                    InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                                    imm.showSoftInput(mobileEdit, InputMethodManager.SHOW_IMPLICIT);
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    });
+                } else {
+                    mobileEdit.setCompoundDrawables(null, null, null, null);
+                    mobileEdit.setOnTouchListener(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
+        // 设置回车键监听器
+        mobileEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_UNSPECIFIED) {
                     // 隐藏键盘
                     hideKeyboardAndClearFocus();
                     // 使 EditText 失去焦点
                     mobileEdit.clearFocus();
+                    // 匹配手机号
+                    Boolean match = Regex.isValidPhoneNumber(mobileEdit.getText().toString());
+                    if(!match) {
+                        mobileErrorText.setVisibility(TextView.VISIBLE);
+                        return false;
+                    } else {
+                        mobileErrorText.setVisibility(TextView.GONE);
+                    }
+                    return true;
                 }
+                return false;
             }
         });
     }

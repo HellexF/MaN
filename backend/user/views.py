@@ -9,6 +9,19 @@ from .serializer import NoteUserSerializer
 
 # Create your views here.
 
+class CheckEmailAvailableView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            user = NoteUser.objects.get(
+                email=data["email"]
+            )
+        except NoteUser.DoesNotExist:
+            return Response({"message": "Email has not been registered", "is_available": False},
+                            status=status.HTTP_200_OK)
+        return Response({"message": "Email exists", "is_available": True}, status=status.HTTP_200_OK)
+
+
 class CheckPhoneNumberAvailableView(APIView):
     def post(self, request):
         data = request.data

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mobile_login_layout"
+    android:id="@+id/email_login_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -21,7 +21,7 @@
         app:layout_constraintGuide_percent="0.95" />
 
     <TextView
-        android:id="@+id/mobile_login_text"
+        android:id="@+id/email_login_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/mobile_login_text"
@@ -33,35 +33,35 @@
         android:layout_marginTop="30dp" />
 
     <EditText
-        android:id="@+id/mobile_edit"
+        android:id="@+id/email_edit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:background="@drawable/input_text"
-        android:hint="@string/mobile_edit_text"
+        android:hint="请输入邮箱"
         android:inputType="text"
         android:textColor="#bbbec5"
         android:textCursorDrawable="@drawable/cursor_color"
         android:padding="10dp"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/mobile_login_text" />
+        app:layout_constraintTop_toBottomOf="@id/email_login_text" />
 
     <TextView
-        android:id="@+id/mobile_error_text"
+        android:id="@+id/email_error_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:paddingTop="1dp"
-        android:text="请输入正确的手机号"
+        android:text="请输入正确的邮箱"
         android:textColor="@android:color/holo_red_dark"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/mobile_edit"
+        app:layout_constraintTop_toBottomOf="@id/email_edit"
         android:visibility="gone"/>
 
     <Button
-        android:id="@+id/mobile_next_button"
+        android:id="@+id/email_next_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -72,10 +72,10 @@
         android:textColor="@color/white"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/mobile_edit" />
+        app:layout_constraintTop_toBottomOf="@id/email_edit" />
 
     <Button
-        android:id="@+id/mobile_login_return_button"
+        android:id="@+id/email_login_return_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -86,6 +86,6 @@
         android:textColor="@color/black"
         app:layout_constraintEnd_toStartOf="@id/guideline_right"
         app:layout_constraintStart_toStartOf="@id/guideline_left"
-        app:layout_constraintTop_toBottomOf="@id/mobile_next_button" />
+        app:layout_constraintTop_toBottomOf="@id/email_next_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
