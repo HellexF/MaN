@@ -11,8 +11,14 @@ class NoteUserSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+        # 检查是否提供了邮箱或电话号码
         if not data.get('email') and not data.get('phone_number'):
             raise serializers.ValidationError('Either email or phone number must be provided.')
+
+        # 检查用户名是否已经存在
+        if NoteUser.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError('Username is already taken.')
+
         return data
 
     def create(self, validated_data):
@@ -24,3 +30,9 @@ class NoteUserSerializer(serializers.ModelSerializer):
             signature=""
         )
         return user
+
+class LoginInfoSerializer(serializers.Serializer):
+    type = serializers.IntegerField()
+    password = serializers.CharField(write_only=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.CharField(required=False, allow_blank=True)

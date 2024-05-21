@@ -3,6 +3,8 @@ package com.example.man.api;
 import com.example.man.api.models.CheckEmailAvailableResponse;
 import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
 import com.example.man.api.models.Email;
+import com.example.man.api.models.LoginInfo;
+import com.example.man.api.models.LoginResponse;
 import com.example.man.api.models.PhoneNumber;
 import com.example.man.api.models.RegisterInfo;
 import com.example.man.api.models.RegistrationResponse;
@@ -20,4 +22,6 @@ public interface ApiService {
     Call<CheckEmailAvailableResponse> checkEmailAvailable(@Body Email email);
     @POST("/user/register")
     Call<RegistrationResponse> register(@Body RegisterInfo registerInfo);
+    @POST("/user/login")
+    Call<LoginResponse> login(@Body LoginInfo loginInfo);
 }

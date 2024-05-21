@@ -2,9 +2,11 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from django.contrib.auth import authenticate
 
 from .models import *
 from .serializer import NoteUserSerializer
+from .serializer import LoginInfoSerializer
 
 
 # Create your views here.
@@ -34,40 +36,6 @@ class CheckPhoneNumberAvailableView(APIView):
                             status=status.HTTP_200_OK)
         return Response({"message": "Phone number exists", "is_available": True}, status=status.HTTP_200_OK)
 
-class LoginByEmailView(APIView):
-    def post(self, request):
-        data = request.data
-        try:
-            user = NoteUser.objects.get(
-                email=data['email'],
-                password=data['password'])
-        except NoteUser.DoesNotExist:
-            return Response({"message": "Invalid credentials"},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        return Response({"userId": user.id,
-                         "username": user.username,
-                         "email": user.email,
-                         "phone_number": user.phone_number,
-                         "signature": user.signature,
-                         "message": "Logged in"}, status=status.HTTP_200_OK)
-
-class LoginByPhoneNumberView(APIView):
-    def post(self, request):
-        data = request.data
-        try:
-            user = NoteUser.objects.get(
-                phone_number=data['phone_number'],
-                password=data['password'])
-        except NoteUser.DoesNotExist:
-            return Response({"message": "Invalid credentials"},
-                            status=status.HTTP_401_UNAUTHORIZED)
-        return Response({"userId": user.id,
-                         "username": user.username,
-                         "email": user.email,
-                         "phone_number": user.phone_number,
-                         "signature": user.signature,
-                         "message": "Logged in"}, status=status.HTTP_200_OK)
-
 class RegisterView(APIView):
     def post(self, request):
         serializer = NoteUserSerializer(data=request.data)
@@ -77,3 +45,28 @@ class RegisterView(APIView):
             return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginView(APIView):
+    def post(self, request):
+        serializer = LoginInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            login_type = serializer.validated_data['type']
+            password = serializer.validated_data['password']
+
+            if login_type != 0:
+                email = serializer.validated_data['email']
+                try:
+                    user = NoteUser.objects.get(email=email, password=password)
+                except NoteUser.DoesNotExist:
+                    return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                phone_number = serializer.validated_data['phone_number']
+                try:
+                    user = NoteUser.objects.get(phone_number=phone_number, password=password)
+                except NoteUser.DoesNotExist:
+                    return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

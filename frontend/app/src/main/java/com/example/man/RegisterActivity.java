@@ -63,7 +63,7 @@ public class RegisterActivity extends AppCompatActivity {
         registerType = intent.getIntExtra("type", -1);
         extraEdit = findViewById(R.id.extra_edit);
         extraErrorText = findViewById(R.id.extra_error_text);
-        if ( registerType == 0){
+        if (registerType == 0) {
             registerValue = intent.getStringExtra("phone_number");
             extraEdit.setHint(getString(R.string.email_edit_text));
             extraErrorText.setText(getString(R.string.invalid_email_text));
@@ -144,6 +144,7 @@ public class RegisterActivity extends AppCompatActivity {
         finishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                setInfoValid();
                 // 表单信息不合法
                 if (!infoValid){
                     Toast.makeText(RegisterActivity.this, "请检查注册信息", Toast.LENGTH_LONG).show();
@@ -159,23 +160,16 @@ public class RegisterActivity extends AppCompatActivity {
                 else {
                     registerInfo = new RegisterInfo(usernameEdit.getText().toString(), passwordEdit.getText().toString(),
                             extraEdit.getText().toString(), registerValue);
-
                 }
 
                 Call<RegistrationResponse> call = apiService.register(registerInfo);
                 call.enqueue(new Callback<RegistrationResponse>() {
                     @Override
                     public void onResponse(Call<RegistrationResponse> call, Response<RegistrationResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            RegistrationResponse registrationResponse = response.body();
-                            boolean registered = registrationResponse.getNonFieldErrors().isEmpty() &&
-                                    registrationResponse.getPassword().isEmpty() &&
-                                    registrationResponse.getUsername().isEmpty();
-
-                            if (registered) {
-                                Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                            }
-
+                        if (response.isSuccessful()) {
+                            Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(RegisterActivity.this, NoteActivity.class);
+                            startActivity(intent);
                         } else {
                             Toast.makeText(RegisterActivity.this, "请求错误", Toast.LENGTH_LONG).show();
                         }
@@ -198,6 +192,5 @@ public class RegisterActivity extends AppCompatActivity {
                 (extraEdit.getText().toString().isEmpty() ||
                         (registerType == 0 ? Regex.isValidEmail(extraEdit.getText().toString()) :
                         Regex.isValidPhoneNumber(extraEdit.getText().toString())));
-
     }
 }

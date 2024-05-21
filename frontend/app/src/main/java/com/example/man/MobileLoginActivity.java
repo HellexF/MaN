@@ -87,7 +87,7 @@ public class MobileLoginActivity extends AppCompatActivity {
                                     startActivity(intent);
                                 }
                                 // 进入登录页面
-                                else{
+                                else {
                                     Intent intent = new Intent(MobileLoginActivity.this, LoginActivity.class);
                                     intent.putExtra("phone_number", mobileEdit.getText().toString());
                                     intent.putExtra("type", 0);
