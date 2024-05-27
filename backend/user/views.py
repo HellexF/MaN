@@ -64,9 +64,9 @@ class LoginView(APIView):
                 try:
                     user = NoteUser.objects.get(phone_number=phone_number, password=password)
                 except NoteUser.DoesNotExist:
-                    return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({ 'message': 'Invalid credentials' }, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            return Response({ 'message': 'Success', 'username': user.get_username(), 'signature': user.get_signature() }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

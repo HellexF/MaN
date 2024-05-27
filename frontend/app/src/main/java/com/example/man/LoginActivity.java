@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -147,8 +148,13 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                             if (response.isSuccessful()) {
+                                LoginResponse loginResponse = response.body();
+                                String username = loginResponse.getUsername();
+                                String signature = loginResponse.getSignature();
                                 // 进入笔记页面
                                 Intent intent = new Intent(LoginActivity.this, NoteActivity.class);
+                                intent.putExtra("username", username);
+                                intent.putExtra("signature", signature);
                                 startActivity(intent);
                             } else {
                                 // 登录失败，获取错误信息
