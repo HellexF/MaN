@@ -4,6 +4,7 @@ import java.util.List;
 
 public class LoginResponse {
     private String message;
+    private int id;
     private List<String> username;
     private List<String> password;
     private List<String> non_field_errors;
@@ -11,6 +12,8 @@ public class LoginResponse {
     public String getMessage() {
         return message;
     }
+
+    public int getId() { return id; }
 
     public List<String> getUsername() {
         return username;
@@ -26,6 +29,10 @@ public class LoginResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setUsername(List<String> username) {

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -17,18 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
 import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
-import com.example.man.api.models.PhoneNumber;
+import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.utils.Regex;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -70,7 +64,7 @@ public class MobileLoginActivity extends AppCompatActivity {
                     mobileErrorText.setVisibility(TextView.VISIBLE);
                 } else {
                     mobileErrorText.setVisibility(TextView.GONE);
-                    Call<CheckPhoneNumberAvailableResponse> call = apiService.checkPhoneNumberAvailable(new PhoneNumber(mobileEdit.getText().toString()));
+                    Call<CheckPhoneNumberAvailableResponse> call = apiService.checkPhoneNumberAvailable(new PhoneNumberRequest(mobileEdit.getText().toString()));
                     call.enqueue(new Callback<CheckPhoneNumberAvailableResponse>() {
                         @Override
                         public void onResponse(Call<CheckPhoneNumberAvailableResponse> call, Response<CheckPhoneNumberAvailableResponse> response) {

@@ -17,15 +17,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.PagerAdapter;
 
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
-import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
-import com.example.man.api.models.LoginInfo;
+import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
-import com.example.man.api.models.PhoneNumber;
-import com.example.man.utils.Regex;
+import com.example.man.utils.SharedPreferencesManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,16 +136,20 @@ public class LoginActivity extends AppCompatActivity {
                     passwordErrorText.setVisibility(TextView.GONE);
                     Call<LoginResponse> call;
                     if (loginType == 0) {
-                        call = apiService.login(new LoginInfo(loginType, passwordEdit.getText().toString(), loginValue, ""));
+                        call = apiService.login(new LoginInfoRequest(loginType, passwordEdit.getText().toString(), loginValue, ""));
                     } else {
-                        call = apiService.login(new LoginInfo(loginType, passwordEdit.getText().toString(), "", loginValue));
+                        call = apiService.login(new LoginInfoRequest(loginType, passwordEdit.getText().toString(), "", loginValue));
                     }
                     call.enqueue(new Callback<LoginResponse>() {
                         @Override
                         public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                             if (response.isSuccessful()) {
                                 // 进入笔记页面
-                                Intent intent = new Intent(LoginActivity.this, NoteActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, InfoActivity.class);
+
+                                // 保存登录信息
+                                SharedPreferencesManager.saveLoginStatus(LoginActivity.this, true);
+                                SharedPreferencesManager.saveUserId(LoginActivity.this, String.valueOf(response.body().getId()));
                                 startActivity(intent);
                             } else {
                                 // 登录失败，获取错误信息

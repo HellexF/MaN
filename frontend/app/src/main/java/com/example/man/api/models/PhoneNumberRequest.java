@@ -1,9 +1,9 @@
 package com.example.man.api.models;
 
-public class PhoneNumber {
+public class PhoneNumberRequest {
     private String phone_number;
 
-    public PhoneNumber(String phone_number_){
+    public PhoneNumberRequest(String phone_number_){
         phone_number = phone_number_;
     }
 

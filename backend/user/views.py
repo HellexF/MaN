@@ -5,8 +5,9 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 
 from .models import *
-from .serializer import NoteUserSerializer
+from .serializer import NoteUserSerializer, AvatarUploadSerializer
 from .serializer import LoginInfoSerializer
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
@@ -66,7 +67,30 @@ class LoginView(APIView):
                 except NoteUser.DoesNotExist:
                     return Response({'message': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Success', 'id': user.id}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class UserInfoView(APIView):
+    def get(self, request, user_id):
+        user = get_object_or_404(NoteUser, id=user_id)
+        serializer = NoteUserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UploadAvatarView(APIView):
+    def post(self, request):
+        user_id = request.data.get('id')
+        print(request.data)
+        try:
+            user = NoteUser.objects.get(id=user_id)
+        except NoteUser.DoesNotExist:
+            return Response({'message': '用户不存在'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AvatarUploadSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user.avatar = serializer.validated_data['avatar']
+            user.save()
+            return Response({'message': '上传成功', 'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

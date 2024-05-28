@@ -2,7 +2,10 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
+        jcenter()
         gradlePluginPortal()
+        maven(uri("https://jitpack.io"))
+        maven(uri("https://dl.bintray.com/spark/maven"))
     }
 }
 dependencyResolutionManagement {
@@ -10,6 +13,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        jcenter()
+        maven(uri("https://jitpack.io"))
+        maven(uri("https://dl.bintray.com/spark/maven"))
     }
 }
 

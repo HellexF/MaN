@@ -1,24 +1,24 @@
 package com.example.man.api.models;
 
-public class RegisterInfo {
-    private String username;
+public class LoginInfoRequest {
+    private int type;
     private String password;
     private String phone_number;
     private String email;
 
-    public RegisterInfo(String username, String password, String phone_number, String email) {
-        this.username = username;
+    public LoginInfoRequest(int type, String password, String phone_number, String email) {
+        this.type = type;
         this.password = password;
         this.phone_number = phone_number;
         this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    public int getType() {
+        return type;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setType(int type) {
+        this.type = type;
     }
 
     public String getPassword() {

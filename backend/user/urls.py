@@ -1,5 +1,7 @@
+from django.conf.urls.static import static
 from django.urls import path
 
+from MaN import settings
 from . import views
 
 urlpatterns = [
@@ -23,4 +25,14 @@ urlpatterns = [
         views.LoginView.as_view(),
         name="login"
     ),
-]
+    path(
+        "user_info/<int:user_id>/",
+        views.UserInfoView.as_view(),
+        name='user_info'
+    ),
+    path(
+        'upload_avatar',
+         views.UploadAvatarView.as_view(),
+         name='upload_avatar'
+    ),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

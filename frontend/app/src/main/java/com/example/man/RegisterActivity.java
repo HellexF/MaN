@@ -2,8 +2,6 @@ package com.example.man;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,17 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
-import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
-import com.example.man.api.models.PhoneNumber;
-import com.example.man.api.models.RegisterInfo;
+import com.example.man.api.models.RegisterInfoRequest;
 import com.example.man.api.models.RegistrationResponse;
 import com.example.man.utils.Regex;
-
-import org.w3c.dom.Text;
-
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -152,23 +142,23 @@ public class RegisterActivity extends AppCompatActivity {
                 }
 
                 // 构建请求体
-                RegisterInfo registerInfo;
+                RegisterInfoRequest registerInfoRequest;
                 if (registerType == 0){
-                    registerInfo = new RegisterInfo(usernameEdit.getText().toString(), passwordEdit.getText().toString(),
+                    registerInfoRequest = new RegisterInfoRequest(usernameEdit.getText().toString(), passwordEdit.getText().toString(),
                             registerValue, extraEdit.getText().toString());
                 }
                 else {
-                    registerInfo = new RegisterInfo(usernameEdit.getText().toString(), passwordEdit.getText().toString(),
+                    registerInfoRequest = new RegisterInfoRequest(usernameEdit.getText().toString(), passwordEdit.getText().toString(),
                             extraEdit.getText().toString(), registerValue);
                 }
 
-                Call<RegistrationResponse> call = apiService.register(registerInfo);
+                Call<RegistrationResponse> call = apiService.register(registerInfoRequest);
                 call.enqueue(new Callback<RegistrationResponse>() {
                     @Override
                     public void onResponse(Call<RegistrationResponse> call, Response<RegistrationResponse> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(RegisterActivity.this, NoteActivity.class);
+                            Intent intent = new Intent(RegisterActivity.this, InfoActivity.class);
                             startActivity(intent);
                         } else {
                             Toast.makeText(RegisterActivity.this, "请求错误", Toast.LENGTH_LONG).show();

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <com.apg.mobile.roundtextview.RoundTextView
+        android:id="@+id/info_text_view"
+        android:layout_width="0dp"
+        android:layout_weight="16"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingTop="8dp"
+        android:text="Round me up !"
+        android:textSize="20sp"
+        android:textColor="#fff"
+        android:padding="12dp"
+        app:allCorner="16dp"
+        app:bgColor="#6c22df" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <com.dd.CircularProgressButton
+        android:id="@+id/btnWithText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:layout_weight="1"
+        android:textSize="18sp"
+        android:padding="12dp"
+        app:cpb_cornerRadius="16dp"
+        app:cpb_selectorIdle="@drawable/idle_state_selector"
+        app:cpb_textComplete="@string/info_configuration_text"
+        app:cpb_textError="@string/info_configuration_error_text"
+        app:cpb_textIdle="@string/info_configuration_text" />
+
+</LinearLayout>

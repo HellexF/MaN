@@ -16,4 +16,11 @@
     <string name="password_not_the_same_text">两次输入的密码不相同</string>
     <string name="invalid_phone_number_text">请输入合法手机号</string>
     <string name="invalid_email_text">请输入合法邮箱</string>
+    <string name="navigation_note_title">笔记</string>
+    <string name="navigation_memo_title">备忘录</string>
+    <string name="navigation_info_title">我</string>
+    <string name="info_configuration_text">修改</string>
+    <string name="info_configuration_success_text">修改成功</string>
+    <string name="info_configuration_error_text">发生错误</string>
+    <string name="logout_button_text">登出</string>
 </resources>

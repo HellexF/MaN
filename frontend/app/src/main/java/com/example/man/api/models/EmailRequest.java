@@ -1,9 +1,9 @@
 package com.example.man.api.models;
 
-public class Email {
+public class EmailRequest {
     private String email;
 
-    public Email(String email_){
+    public EmailRequest(String email_){
         email = email_;
     }
 
