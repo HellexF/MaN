@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -5,7 +7,8 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 
 from .models import *
-from .serializer import NoteUserSerializer, AvatarUploadSerializer
+from .serializer import NoteUserSerializer, AvatarUploadSerializer, UsernameUpdateSerializer, SignatureUpdateSerializer, \
+    EmailUpdateSerializer, PhoneUpdateSerializer, PasswordUpdateSerializer
 from .serializer import LoginInfoSerializer
 from django.shortcuts import get_object_or_404
 
@@ -42,9 +45,9 @@ class RegisterView(APIView):
         serializer = NoteUserSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-
+            user = serializer.save()
+            return Response({'message': 'User registered successfully', 'id': user.id}, status=status.HTTP_201_CREATED)
+        print(json.dumps(serializer.errors, indent=4))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
@@ -84,13 +87,74 @@ class UploadAvatarView(APIView):
         try:
             user = NoteUser.objects.get(id=user_id)
         except NoteUser.DoesNotExist:
-            return Response({'message': '用户不存在'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'user not found'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = AvatarUploadSerializer(data=request.data)
 
         if serializer.is_valid():
             user.avatar = serializer.validated_data['avatar']
             user.save()
-            return Response({'message': '上传成功', 'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
+            return Response({'message': 'success', 'avatar_url': user.avatar.url}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateUsernameView(APIView):
+    def patch(self, request):
+        serializer = UsernameUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = NoteUser.objects.get(id=serializer.validated_data['id'])
+                serializer.update(user, serializer.validated_data)
+                return Response({'message': 'success'}, status=status.HTTP_200_OK)
+            except NoteUser.DoesNotExist:
+                return Response({'message': 'user not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdateSiagnatureView(APIView):
+    def patch(self, request):
+        serializer = SignatureUpdateSerializer(data=request.data)
+        try:
+            user = NoteUser.objects.get(id=request.data['id'])
+            serializer.update(user, request.data)
+            return Response({'message': 'success'}, status=status.HTTP_200_OK)
+        except NoteUser.DoesNotExist:
+            return Response({'message': 'user not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateEmailView(APIView):
+    def patch(self, request):
+        serializer = EmailUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = NoteUser.objects.get(id=request.data['id'])
+                serializer.update(user, request.data)
+                return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            except NoteUser.DoesNotExist:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdatePhoneNumberView(APIView):
+    def patch(self, request):
+        serializer = PhoneUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = NoteUser.objects.get(id=request.data['id'])
+                serializer.update(user, request.data)
+                return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            except NoteUser.DoesNotExist:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UpdatePasswordView(APIView):
+    def patch(self, request):
+        serializer = PasswordUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = NoteUser.objects.get(id=request.data['id'])
+                serializer.update(user, request.data)
+                return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+            except NoteUser.DoesNotExist:
+                return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

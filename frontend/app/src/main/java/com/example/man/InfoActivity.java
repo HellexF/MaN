@@ -1,14 +1,23 @@
 package com.example.man;
 
+import static com.example.man.utils.Mask.maskEmail;
+import static com.example.man.utils.Mask.maskPhoneNumber;
+
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.content.ContentResolver;
 
@@ -17,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.a520wcf.yllistview.YLListView;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.man.adapters.UserInfoAdapter;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
@@ -27,6 +37,7 @@ import com.example.man.utils.SharedPreferencesManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import okhttp3.MediaType;
@@ -40,7 +51,9 @@ public class InfoActivity extends AppCompatActivity {
     private ListView listView;
     private ImageView avatarImageView;
     private ApiService apiService;
+    private UserInfoAdapter userInfoAdapter;
     private static final int REQUEST_IMAGE_UPLOAD = 1;
+    private ArrayList<String> data;
     @Override
     protected void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,48 +69,80 @@ public class InfoActivity extends AppCompatActivity {
 
         ((YLListView)listView).setFinalTopHeight(500);
 
-        String[] data = {"", "", "", "", "", "", ""};
+        data = new ArrayList<>(Arrays.asList("", "", "", "", "", "", ""));
 
-        Call<UserInfoResponse> call = apiService.getUser(Integer.parseInt(SharedPreferencesManager.getUserId(this)));
-        call.enqueue(new Callback<UserInfoResponse>() {
+        parseInfo(data);
+
+        userInfoAdapter = new UserInfoAdapter(
+                InfoActivity.this,
+                R.layout.user_info_list_item,
+                data
+        );
+
+        listView.setAdapter(userInfoAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> response) {
-                parseInfo(response.body(), data);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                position=position-listView.getHeaderViewsCount();
+            }
+        });
 
-                UserInfoAdapter adapter = new UserInfoAdapter(
-                        InfoActivity.this,
-                        R.layout.user_info_list_item,
-                        Arrays.asList(data)
-                );
+        listView.setVerticalScrollBarEnabled(false);
 
-                ImageView imageView = topView.findViewById(R.id.avatar_image_view);
+        // 设置拉动时刷新信息
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                // 当滚动停止时，且滚动到列表顶部时触发
+                if (scrollState == SCROLL_STATE_IDLE && listView.getFirstVisiblePosition() == 0) {
+                    Call<UserInfoResponse> infoCall = apiService.getUser(Integer.parseInt(SharedPreferencesManager.getUserId(InfoActivity.this)));
+                    infoCall.enqueue(new Callback<UserInfoResponse>() {
+                        @Override
+                        public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> infoResponse) {
+                            SharedPreferencesManager.saveUserName(InfoActivity.this, infoResponse.body().getUsername());
+                            SharedPreferencesManager.saveUserAvatar(InfoActivity.this, infoResponse.body().getAvatar());
+                            SharedPreferencesManager.saveUserEmail(InfoActivity.this, infoResponse.body().getEmail());
+                            SharedPreferencesManager.saveUserPhone(InfoActivity.this, infoResponse.body().getPhoneNumber());
+                            SharedPreferencesManager.saveUserSignature(InfoActivity.this, infoResponse.body().getSignature());
 
-                listView.setAdapter(adapter);
+                            ArrayList<String> newData = new ArrayList<>(Arrays.asList("", "", "", "", "", "", ""));
+                            parseInfo(newData);
+                            data.clear();
+                            data.addAll(newData);
+                            userInfoAdapter.notifyDataSetChanged();
+                        }
 
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        position=position-listView.getHeaderViewsCount();
-                    }
-                });
-
-                listView.setVerticalScrollBarEnabled(false);
-
-                // 设置头像上传逻辑
-                ImageButton uploadButton = topView.findViewById(R.id.upload_button);
-                uploadButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(intent, REQUEST_IMAGE_UPLOAD);
-                    }
-                });
-
+                        @Override
+                        public void onFailure(Call<UserInfoResponse> call, Throwable t) {
+                            Toast.makeText(InfoActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
             }
 
             @Override
-            public void onFailure(Call<UserInfoResponse> call, Throwable t) {
-                Toast.makeText(InfoActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            }
+        });
+
+        // 设置头像上传逻辑
+        ImageButton uploadButton = topView.findViewById(R.id.upload_button);
+        uploadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, REQUEST_IMAGE_UPLOAD);
+            }
+        });
+
+        // 设置返回按钮
+        ImageButton returnButton = findViewById(R.id.info_return_button);
+        returnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(InfoActivity.this, NoteActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -112,39 +157,41 @@ public class InfoActivity extends AppCompatActivity {
         }
     }
 
-    void parseInfo(UserInfoResponse userInfoResponse, String[] data){
+    void parseInfo(ArrayList<String> data){
         // 解析用户名
-        data[0] = "用户名：" + userInfoResponse.getUsername();
+        data.set(0, "用户名：" + SharedPreferencesManager.getUserName(this));
 
         // 解析密码
-        data[1] = "密码：********";
+        data.set(1, "密码：********");
 
         // 解析邮箱
-        if(userInfoResponse.getEmail().isEmpty()){
-            data[2] = "邮箱；未设置";
+        if(SharedPreferencesManager.getUserEmail(this).isEmpty()){
+            data.set(2, "邮箱：未设置");
         }
         else {
-            data[2] = "邮箱；" + userInfoResponse.getEmail();
+            String email = SharedPreferencesManager.getUserEmail(this);;
+            data.set(2, "邮箱：" + maskEmail(email));
         }
 
         // 解析手机号
-        if(userInfoResponse.getPhoneNumber().isEmpty()){
-            data[3] = "手机号；未设置";
+        if(SharedPreferencesManager.getUserPhone(this).isEmpty()){
+            data.set(3, "手机号：未设置");
         }
         else {
-            data[3] = "手机号；" + userInfoResponse.getPhoneNumber();
+            String phoneNumber = SharedPreferencesManager.getUserPhone(this);
+            data.set(3, "手机号；" + maskPhoneNumber(phoneNumber));
         }
 
         // 解析签名
-        if(userInfoResponse.getSignature().isEmpty()){
-            data[4] = "签名；未设置";
+        if(SharedPreferencesManager.getUserSignature(this).isEmpty()){
+            data.set(4, "签名：未设置");
         }
         else {
-            data[4] = "签名；" + userInfoResponse.getSignature();
+            data.set(4, "签名：" + SharedPreferencesManager.getUserSignature(this));
         }
 
         Glide.with(this)
-                .load("http://10.0.2.2:8000" + userInfoResponse.getAvatar())
+                .load("http://10.0.2.2:8000" + SharedPreferencesManager.getUserAvatar(this))
                 .into(avatarImageView);
     }
 
@@ -166,7 +213,16 @@ public class InfoActivity extends AppCompatActivity {
             public void onResponse(Call<UploadAvatarResponse> call, Response<UploadAvatarResponse> response) {
                 int statusCode = response.code();
                 if (statusCode == 200) {
-                    Toast.makeText(InfoActivity.this, "上传成功" + statusCode, Toast.LENGTH_LONG).show();
+                    // 更新本地头像缓存
+                    SharedPreferencesManager.saveUserAvatar(InfoActivity.this, response.body().getAvatarUrl());
+                    Glide.with(InfoActivity.this)
+                            .load("http://10.0.2.2:8000" + SharedPreferencesManager.getUserAvatar(InfoActivity.this))
+                            .apply(new RequestOptions()
+                                    .placeholder(R.drawable.user_avatar)
+                                    .error(R.drawable.user_avatar))
+                            .into(avatarImageView);
+
+                    Toast.makeText(InfoActivity.this, "上传成功", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(InfoActivity.this, response.message(), Toast.LENGTH_LONG).show();
                 }

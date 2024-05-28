@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.man.adapters.MyAdapter;
 import com.loopeer.itemtouchhelperextension.ItemTouchHelperExtension;
 
 public class ItemTouchHelperCallback extends ItemTouchHelperExtension.Callback {

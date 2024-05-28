@@ -35,4 +35,29 @@ urlpatterns = [
          views.UploadAvatarView.as_view(),
          name='upload_avatar'
     ),
+    path(
+        'update_username',
+         views.UpdateUsernameView.as_view(),
+         name='update_username'
+    ),
+    path(
+        'update_signature',
+         views.UpdateSiagnatureView.as_view(),
+         name='update_signature'
+    ),
+    path(
+        'update_email',
+         views.UpdateEmailView.as_view(),
+         name='update_email'
+    ),
+    path(
+        'update_phone_number',
+         views.UpdatePhoneNumberView.as_view(),
+         name='update_phone_number'
+    ),
+    path(
+        'update_password',
+         views.UpdatePasswordView.as_view(),
+         name='update_password'
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

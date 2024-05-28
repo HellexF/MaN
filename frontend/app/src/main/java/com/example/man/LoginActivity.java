@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -11,23 +12,29 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.man.adapters.UserInfoAdapter;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
 import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
+import com.example.man.api.models.UserInfoResponse;
 import com.example.man.utils.SharedPreferencesManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -145,16 +152,32 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                             if (response.isSuccessful()) {
-                                LoginResponse loginResponse = response.body();
-                                String username = loginResponse.getUsername();
-                                String signature = loginResponse.getSignature();
-                                // 进入笔记页面
-                                Intent intent = new Intent(LoginActivity.this, InfoActivity.class);
+                                Intent intent = new Intent(LoginActivity.this, NoteActivity.class);
 
                                 // 保存登录信息
                                 SharedPreferencesManager.saveLoginStatus(LoginActivity.this, true);
                                 SharedPreferencesManager.saveUserId(LoginActivity.this, String.valueOf(response.body().getId()));
-                                startActivity(intent);
+
+                                Call<UserInfoResponse> infoCall = apiService.getUser(Integer.parseInt(SharedPreferencesManager.getUserId(LoginActivity.this)));
+                                infoCall.enqueue(new Callback<UserInfoResponse>() {
+                                    @Override
+                                    public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> infoResponse) {
+                                        SharedPreferencesManager.saveUserName(LoginActivity.this, infoResponse.body().getUsername());
+                                        SharedPreferencesManager.saveUserAvatar(LoginActivity.this, infoResponse.body().getAvatar());
+                                        SharedPreferencesManager.saveUserEmail(LoginActivity.this, infoResponse.body().getEmail());
+                                        SharedPreferencesManager.saveUserPhone(LoginActivity.this, infoResponse.body().getPhoneNumber());
+                                        SharedPreferencesManager.saveUserSignature(LoginActivity.this, infoResponse.body().getSignature());
+
+                                        startActivity(intent);
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<UserInfoResponse> call, Throwable t) {
+                                        Toast.makeText(LoginActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+
                             } else {
                                 // 登录失败，获取错误信息
                                 if (response.errorBody() != null) {

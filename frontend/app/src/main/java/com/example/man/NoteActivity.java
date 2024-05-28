@@ -4,12 +4,17 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,12 +24,25 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.example.man.adapters.MyAdapter;
+import com.example.man.adapters.UserInfoAdapter;
+import com.example.man.api.ApiClient;
+import com.example.man.api.ApiService;
+import com.example.man.api.models.UserInfoResponse;
+import com.example.man.utils.SharedPreferencesManager;
 import com.google.android.material.navigation.NavigationView;
 import com.loopeer.itemtouchhelperextension.ItemTouchHelperExtension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NoteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, MyAdapter.OnItemSelectedListener {
     private String username = "";
@@ -40,18 +58,22 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     private TextView usernameTextView;
     private TextView signatureTextView;
     private RecyclerView recyclerView;
+    private ImageView avatarImageView;
     private MyAdapter adapter;
     private List<String> data = new ArrayList<>();
+    private ApiService apiService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
 
+        apiService = ApiClient.getClient().create(ApiService.class);
+
         // 获取当前登录用户的用户名
-        Intent intent = getIntent();
-        username = intent.getStringExtra("username");
-        signature = intent.getStringExtra("signature");
-        if (Objects.equals(signature, "")) signature = "What can I say? Mamba out!";
+        username = SharedPreferencesManager.getUserName(this);
+        signature = SharedPreferencesManager.getUserSignature(this);
+        if (Objects.equals(signature, "")) signature = "未设置";
+
 
         display = 0;
         data.add("收集箱");
@@ -64,7 +86,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         // 设置侧边栏单击事件
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setNavigationItemSelectedListener(NoteActivity.this);
         View headerView = navigationView.getHeaderView(0);
         usernameTextView = headerView.findViewById(R.id.username);
         usernameTextView.setText(username);
@@ -76,6 +98,15 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+
+        // 设置头像
+        avatarImageView = headerView.findViewById(R.id.sidebar_avatar);
+        Glide.with(this)
+                .load("http://10.0.2.2:8000" + SharedPreferencesManager.getUserAvatar(this))
+                .apply(new RequestOptions()
+                        .placeholder(R.drawable.user_avatar)
+                        .error(R.drawable.user_avatar))
+                .into(avatarImageView);
 
         // 设置笔记显示方式按钮的ICON
         displayButton = findViewById(R.id.display_button);
@@ -106,15 +137,15 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
 
         // 设置侧边栏底部添加分类菜单按钮的ICON
         addMenuButton = findViewById(R.id.add_menu_button);
-        icon = ContextCompat.getDrawable(this, R.drawable.add_icon);
+        icon = ContextCompat.getDrawable(NoteActivity.this, R.drawable.add_icon);
         icon.setBounds(0, 0, 50, 50);
         addMenuButton.setCompoundDrawables(icon, null, null, null);
 
         // 设置添加分类按钮的事件处理
         recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
         adapter = new MyAdapter(data);
-        adapter.setOnItemSelectedListener(this);
+        adapter.setOnItemSelectedListener(NoteActivity.this);
         recyclerView.setAdapter(adapter);
         // 设置滑动菜单项删除
         ItemTouchHelperCallback mCallback = new ItemTouchHelperCallback(adapter);
@@ -124,6 +155,15 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 showInputDialog();
+            }
+        });
+
+        // 设置跳转到个人信息页面
+        avatarImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NoteActivity.this, InfoActivity.class);
+                startActivity(intent);
             }
         });
     }

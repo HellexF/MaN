@@ -14,7 +14,7 @@ class PathAndRename:
     def __call__(self, instance, filename):
         ext = filename.split('.')[-1]
         # 设置文件名为用户ID
-        filename = f"{instance.id}_avatar.{ext}"
+        filename = f"user_{instance.id}_avatar.{ext}"
         # 返回上传的路径和重命名后的文件名
         return os.path.join(self.path, filename)
 
@@ -40,12 +40,12 @@ class NoteUserManager(BaseUserManager):
 # Create your models here.
 class NoteUser(models.Model):
     id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=15, unique=True)
-    password = models.CharField(max_length=20)
-    email = models.CharField(max_length=30, blank=True, null=True, unique=True)
+    username = models.CharField(max_length=40, unique=True)
+    password = models.CharField(max_length=40)
+    email = models.CharField(max_length=50, blank=True, null=True, unique=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
-    signature = models.CharField(max_length=40, blank=True, null=True)
-    avatar = models.ImageField(upload_to='images/', default='images/default.png')
+    signature = models.CharField(max_length=60, blank=True, null=True)
+    avatar = models.ImageField(upload_to=PathAndRename('images/avatars/'), default='images/avatars/default.png')
 
     objects = NoteUserManager()
 

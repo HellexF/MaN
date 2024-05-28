@@ -7,6 +7,7 @@ public class RegistrationResponse {
     private List<String> username;
     private List<String> password;
     private List<String> non_field_errors;
+    private String id;
 
     public String getMessage() {
         return message;
@@ -23,6 +24,7 @@ public class RegistrationResponse {
     public List<String> getNonFieldErrors() {
         return non_field_errors;
     }
+    public String getId() { return id; }
 
     public void setMessage(String message) {
         this.message = message;
@@ -39,4 +41,6 @@ public class RegistrationResponse {
     public void setNonFieldErrors(List<String> non_field_errors) {
         this.non_field_errors = non_field_errors;
     }
+
+    public void setId(String id) { this.id = id; }
 }

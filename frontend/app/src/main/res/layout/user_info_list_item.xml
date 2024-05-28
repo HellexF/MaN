@@ -20,7 +20,7 @@
         android:textColor="#fff"
         android:padding="12dp"
         app:allCorner="16dp"
-        app:bgColor="#6c22df" />
+        app:bgColor="@color/light_purple" />
 
     <Space
         android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
         android:layout_weight="1" />
 
     <com.dd.CircularProgressButton
-        android:id="@+id/btnWithText"
+        android:id="@+id/modify_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/white"

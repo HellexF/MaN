@@ -8,6 +8,12 @@ import com.example.man.api.models.LoginResponse;
 import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.api.models.RegisterInfoRequest;
 import com.example.man.api.models.RegistrationResponse;
+import com.example.man.api.models.UpdateEmailRequest;
+import com.example.man.api.models.UpdatePasswordRequest;
+import com.example.man.api.models.UpdatePhoneNumberRequest;
+import com.example.man.api.models.UpdateSignatureRequest;
+import com.example.man.api.models.UpdateUserInfoResponse;
+import com.example.man.api.models.UpdateUsernameRequest;
 import com.example.man.api.models.UploadAvatarResponse;
 import com.example.man.api.models.UserInfoResponse;
 
@@ -17,6 +23,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
@@ -38,4 +45,14 @@ public interface ApiService {
             @Part MultipartBody.Part avatar,
             @Part("id") RequestBody userId
     );
+    @PATCH("/user/update_username")
+    Call<UpdateUserInfoResponse> updateUsername(@Body UpdateUsernameRequest request);
+    @PATCH("/user/update_signature")
+    Call<UpdateUserInfoResponse> updateSignature(@Body UpdateSignatureRequest request);
+    @PATCH("/user/update_email")
+    Call<UpdateUserInfoResponse> updateEmail(@Body UpdateEmailRequest request);
+    @PATCH("/user/update_phone_number")
+    Call<UpdateUserInfoResponse> updatePhoneNumber(@Body UpdatePhoneNumberRequest request);
+    @PATCH("/user/update_password")
+    Call<UpdateUserInfoResponse> updatePassword(@Body UpdatePasswordRequest request);
 }
