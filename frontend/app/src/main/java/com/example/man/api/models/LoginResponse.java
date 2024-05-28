@@ -1,49 +1,26 @@
 package com.example.man.api.models;
 
-import java.util.List;
+import com.google.gson.annotations.SerializedName;
 
 public class LoginResponse {
+    @SerializedName("message")
     private String message;
-    private int id;
-    private List<String> username;
-    private List<String> password;
-    private List<String> non_field_errors;
+
+    @SerializedName("username")
+    private String username;
+
+    @SerializedName("signature")
+    private String signature;
 
     public String getMessage() {
         return message;
     }
 
-    public int getId() { return id; }
-
-    public List<String> getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    public List<String> getPassword() {
-        return password;
-    }
-
-    public List<String> getNonFieldErrors() {
-        return non_field_errors;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setUsername(List<String> username) {
-        this.username = username;
-    }
-
-    public void setPassword(List<String> password) {
-        this.password = password;
-    }
-
-    public void setNonFieldErrors(List<String> non_field_errors) {
-        this.non_field_errors = non_field_errors;
+    public String getSignature() {
+        return signature;
     }
 }

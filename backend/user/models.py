@@ -54,3 +54,9 @@ class NoteUser(models.Model):
 
     def __str__(self):
         return self.username
+
+    def get_username(self):
+        return self.username
+
+    def get_signature(self):
+        return self.signature

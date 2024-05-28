@@ -81,7 +81,7 @@ public class EmailLoginActivity extends AppCompatActivity {
                                     startActivity(intent);
                                 }
                                 // 进入登录页面
-                                else{
+                                else {
                                     Intent intent = new Intent(EmailLoginActivity.this, LoginActivity.class);
                                     intent.putExtra("email", emailEdit.getText().toString());
                                     intent.putExtra("type", 1);
