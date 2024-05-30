@@ -11,14 +11,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.man.adapters.MyAdapter;
+import com.example.man.adapters.NoteCategoriesAdapter;
 import com.loopeer.itemtouchhelperextension.ItemTouchHelperExtension;
 
 public class ItemTouchHelperCallback extends ItemTouchHelperExtension.Callback {
-    private final MyAdapter mAdapter;
+    private final NoteCategoriesAdapter mAdapter;
     private Paint mPaint;
 
-    public ItemTouchHelperCallback(MyAdapter adapter) {
+    public ItemTouchHelperCallback(NoteCategoriesAdapter adapter) {
         mAdapter = adapter;
         mPaint = new Paint();
         mPaint.setColor(Color.parseColor("#ff423d"));

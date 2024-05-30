@@ -1,0 +1,16 @@
+from django.urls import path
+
+from category import views
+
+urlpatterns = [
+    path(
+        "get_categories/<int:user_id>/",
+        views.GetCategoriesView.as_view(),
+        name='get_categories'
+    ),
+    path(
+        "create_category",
+        views.CreateCategoryView.as_view(),
+        name='create_category'
+    ),
+]

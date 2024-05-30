@@ -171,7 +171,7 @@ public class RegisterActivity extends AppCompatActivity {
                             SharedPreferencesManager.saveLoginStatus(RegisterActivity.this, true);
                             SharedPreferencesManager.saveUserId(RegisterActivity.this, response.body().getId());
                             SharedPreferencesManager.saveUserName(RegisterActivity.this, usernameEdit.getText().toString());
-                            SharedPreferencesManager.saveUserAvatar(RegisterActivity.this, "/images/avatars/default.png");
+                            SharedPreferencesManager.saveUserAvatar(RegisterActivity.this, "/media/images/avatars/default.png");
 
                             if (registerType == 0){
                                 SharedPreferencesManager.saveUserPhone(RegisterActivity.this, registerValue);

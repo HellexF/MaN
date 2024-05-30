@@ -25,5 +25,7 @@ from MaN import settings
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('user/', include('user.urls')),
+    path('note/', include('note.urls')),
+    path('category/', include('category.urls')),
     url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
 ]

@@ -13,11 +13,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.man.R;
+import com.example.man.api.models.Category;
 
 import java.util.List;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
-    private List<String> data;
+public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAdapter.MyViewHolder> {
+    private List<Category> data;
     private int selectedItem = 0;
     private OnItemSelectedListener onItemSelectedListener;
 
@@ -29,7 +30,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         this.onItemSelectedListener = listener;
     }
 
-    public MyAdapter(List<String> data) {
+    public NoteCategoriesAdapter(List<Category> data) {
         this.data = data;
     }
 
@@ -42,7 +43,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        holder.bind(data.get(position), position);
+        holder.bind(data.get(position).getName(), position);
     }
 
     @Override
@@ -74,9 +75,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView textView;
         private Context context;
-        private MyAdapter adapter;
+        private NoteCategoriesAdapter adapter;
 
-        public MyViewHolder(@NonNull View itemView, MyAdapter adapter) {
+        public MyViewHolder(@NonNull View itemView, NoteCategoriesAdapter adapter) {
             super(itemView);
             context = itemView.getContext();
             textView = itemView.findViewById(android.R.id.text1);
@@ -110,7 +111,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             adapter.setSelectedItem(position);
             adapter.notifyDataSetChanged();
             if (adapter.onItemSelectedListener != null) {
-                adapter.onItemSelectedListener.onItemSelected(adapter.data.get(position));
+                adapter.onItemSelectedListener.onItemSelected(adapter.data.get(position).getName());
             }
         }
     }

@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth import authenticate
 
+from category.models import Category
 from .models import *
 from .serializer import NoteUserSerializer, AvatarUploadSerializer, UsernameUpdateSerializer, SignatureUpdateSerializer, \
     EmailUpdateSerializer, PhoneUpdateSerializer, PasswordUpdateSerializer
@@ -46,8 +47,9 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            category = Category(user=user, name="收集箱")
+            category.save()
             return Response({'message': 'User registered successfully', 'id': user.id}, status=status.HTTP_201_CREATED)
-        print(json.dumps(serializer.errors, indent=4))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
