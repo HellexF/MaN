@@ -63,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
         mobileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, MobileLoginActivity.class);
+                // Intent intent = new Intent(MainActivity.this, MobileLoginActivity.class);
+                Intent intent = new Intent(MainActivity.this, NoteContentActivity.class);
                 startActivity(intent);
             }
         });
