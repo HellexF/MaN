@@ -179,7 +179,7 @@ public class InfoActivity extends AppCompatActivity {
         }
         else {
             String phoneNumber = SharedPreferencesManager.getUserPhone(this);
-            data.set(3, "手机号；" + maskPhoneNumber(phoneNumber));
+            data.set(3, "手机号：" + maskPhoneNumber(phoneNumber));
         }
 
         // 解析签名
