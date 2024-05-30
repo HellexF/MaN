@@ -137,6 +137,7 @@ class UpdateEmailView(APIView):
 
 class UpdatePhoneNumberView(APIView):
     def patch(self, request):
+        print(request.data)
         serializer = PhoneUpdateSerializer(data=request.data)
         if serializer.is_valid():
             try:

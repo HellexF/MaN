@@ -7,6 +7,7 @@ public class RegisterInfoRequest {
     private String password;
     private String phone_number;
     private String email;
+    private String signature;
 
     public RegisterInfoRequest(String username, String password, String phone_number, String email) {
         this.username = username;
@@ -15,6 +16,7 @@ public class RegisterInfoRequest {
         else this.phone_number = phone_number;
         if (Objects.equals(email, "")) this.email = null;
         else this.email = email;
+        this.signature = "";
     }
 
     public String getUsername() {

@@ -73,7 +73,7 @@ class SignatureUpdateSerializer(serializers.Serializer):
 
 class EmailUpdateSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=True)
-    old_email = serializers.CharField(required=True)
+    old_email = serializers.CharField(required=True, allow_blank=True)
     new_email = serializers.CharField(required=True)
 
     def validate(self, data):
@@ -84,7 +84,7 @@ class EmailUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("User not found")
 
         # 验证旧邮箱是否与用户的当前邮箱匹配
-        if user.email != data['old_email']:
+        if user.email != data['old_email'] and user.email is not None:
             raise serializers.ValidationError({'wrong_email': 'email does not match with user'})
 
         # 验证新邮箱是否已存在
@@ -99,7 +99,7 @@ class EmailUpdateSerializer(serializers.Serializer):
 
 class PhoneUpdateSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=True)
-    old_phone_number = serializers.CharField(required=True)
+    old_phone_number = serializers.CharField(required=True, allow_blank=True)
     new_phone_number = serializers.CharField(required=True)
 
     def validate(self, data):
@@ -110,7 +110,7 @@ class PhoneUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("User not found")
 
         # 验证旧手机是否与用户的当前手机匹配
-        if user.phone_number != data['old_phone_number']:
+        if user.phone_number != data['old_phone_number'] and user.phone_number is not None:
             raise serializers.ValidationError({'wrong_phone_number': 'phone number does not match with user'})
 
         # 验证新手机是否已存在

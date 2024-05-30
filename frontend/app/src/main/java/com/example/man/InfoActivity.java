@@ -102,9 +102,9 @@ public class InfoActivity extends AppCompatActivity {
                         public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> infoResponse) {
                             SharedPreferencesManager.saveUserName(InfoActivity.this, infoResponse.body().getUsername());
                             SharedPreferencesManager.saveUserAvatar(InfoActivity.this, infoResponse.body().getAvatar());
-                            SharedPreferencesManager.saveUserEmail(InfoActivity.this, infoResponse.body().getEmail());
-                            SharedPreferencesManager.saveUserPhone(InfoActivity.this, infoResponse.body().getPhoneNumber());
-                            SharedPreferencesManager.saveUserSignature(InfoActivity.this, infoResponse.body().getSignature());
+                            SharedPreferencesManager.saveUserEmail(InfoActivity.this, infoResponse.body().getEmail() == null ? "" : infoResponse.body().getEmail());
+                            SharedPreferencesManager.saveUserPhone(InfoActivity.this, infoResponse.body().getPhoneNumber() == null ? "" : infoResponse.body().getPhoneNumber());
+                            SharedPreferencesManager.saveUserSignature(InfoActivity.this, infoResponse.body().getSignature() == null ? "" : infoResponse.body().getSignature());
 
                             ArrayList<String> newData = new ArrayList<>(Arrays.asList("", "", "", "", "", "", ""));
                             parseInfo(newData);

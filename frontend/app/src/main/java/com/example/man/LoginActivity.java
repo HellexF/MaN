@@ -164,9 +164,9 @@ public class LoginActivity extends AppCompatActivity {
                                     public void onResponse(Call<UserInfoResponse> call, Response<UserInfoResponse> infoResponse) {
                                         SharedPreferencesManager.saveUserName(LoginActivity.this, infoResponse.body().getUsername());
                                         SharedPreferencesManager.saveUserAvatar(LoginActivity.this, infoResponse.body().getAvatar());
-                                        SharedPreferencesManager.saveUserEmail(LoginActivity.this, infoResponse.body().getEmail());
-                                        SharedPreferencesManager.saveUserPhone(LoginActivity.this, infoResponse.body().getPhoneNumber());
-                                        SharedPreferencesManager.saveUserSignature(LoginActivity.this, infoResponse.body().getSignature());
+                                        SharedPreferencesManager.saveUserEmail(LoginActivity.this, infoResponse.body().getEmail() == null ? "" : infoResponse.body().getEmail());
+                                        SharedPreferencesManager.saveUserPhone(LoginActivity.this, infoResponse.body().getPhoneNumber() == null ? "" : infoResponse.body().getPhoneNumber());
+                                        SharedPreferencesManager.saveUserSignature(LoginActivity.this, infoResponse.body().getSignature() == null ? "" : infoResponse.body().getSignature());
 
                                         startActivity(intent);
 

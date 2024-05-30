@@ -71,11 +71,13 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
     private static final int MODIFY_INFO_EMAIL = 5;
     private static final int MODIFY_INFO_PHONE = 6;
     private static final int MODIFY_INFO_SIGNATURE = 7;
+    private static final int SET_INFO_EMAIL = 8;
+    private static final int SET_INFO_PHONE = 9;
 
     private int convertPosToType (int position) {
-        return position + 3;
+        return position + 3 + (getItem(position).endsWith("未设置") ? 3 : 0);
     }
-    private int convertTypeToPos (int type) { return type - 3; }
+    private int convertTypeToPos (int type) { return type > 7 ? type - 6 : type - 3;}
     public UserInfoAdapter(Context context, int resource, ArrayList<String> data) {
         super(context, resource, data);
         this.resourceLayout = resource;
@@ -134,10 +136,13 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
 
                     if (infoTextView != null) {
                         infoTextView.setText(info);
+                        Button modifyButton = convertView.findViewById(R.id.modify_button);
 
-                        if (info.endsWith("未设置")) {
-                            Button modifyButton = convertView.findViewById(R.id.modify_button);
+                        if (info.endsWith("未设置") && position > 1 && position < 5) {
                             modifyButton.setText("设置");
+                        }
+                        else {
+                            modifyButton.setText("修改");
                         }
                     }
                 }
@@ -153,17 +158,19 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
         else {
             // 不为空时，不需要重新渲染view，但要更改已有内容
             String info = getItem(position);
-            Button modfiyButton = convertView.findViewById(R.id.modify_button);
 
             if (info != null) {
                 TextView infoTextView = convertView.findViewById(R.id.info_text_view);
 
                 if (infoTextView != null) {
                     infoTextView.setText(info);
+                    Button modifyButton = convertView.findViewById(R.id.modify_button);
 
-                    if (info.endsWith("未设置")) {
-                        Button modifyButton = convertView.findViewById(R.id.modify_button);
+                    if (info.endsWith("未设置") && position > 1 && position < 5) {
                         modifyButton.setText("设置");
+                    }
+                    else {
+                        modifyButton.setText("修改");
                     }
                 }
             }
@@ -179,7 +186,8 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
         // 创建对话框的布局视图
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View dialogView;
-        if (type == MODIFY_INFO_USERNAME || type == MODIFY_INFO_SIGNATURE){
+        if (type == MODIFY_INFO_USERNAME || type == MODIFY_INFO_SIGNATURE ||
+        type == SET_INFO_EMAIL || type == SET_INFO_PHONE){
             dialogView = inflater.inflate(R.layout.dialog_input, null);
         }
         // 对于需验证的信息
@@ -326,10 +334,12 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                             finalRecheckErrorTextView.setVisibility(isSamePassword ? View.GONE : View.VISIBLE);
                         }
                         break;
+                    case SET_INFO_EMAIL:
                     case MODIFY_INFO_EMAIL:
                         if (isValidEmail(content)){
                             finalErrorTextView.setVisibility(View.GONE);
-                            Call<UpdateUserInfoResponse> emailCall = apiService.updateEmail(new UpdateEmailRequest(userId, finalCheckTextInput.getText().toString(), content));
+                            Call<UpdateUserInfoResponse> emailCall = apiService.updateEmail(
+                                    new UpdateEmailRequest(userId, type == SET_INFO_EMAIL ? " " : finalCheckTextInput.getText().toString(), content));
                             emailCall.enqueue(new Callback<UpdateUserInfoResponse>() {
                                 @Override
                                 public void onResponse(Call<UpdateUserInfoResponse> call, Response<UpdateUserInfoResponse> response) {
@@ -363,10 +373,12 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                             finalErrorTextView.setVisibility(View.VISIBLE);
                         }
                         break;
+                    case SET_INFO_PHONE:
                     case MODIFY_INFO_PHONE:
                         if (isValidPhoneNumber(content)){
                             finalErrorTextView.setVisibility(View.GONE);
-                            Call<UpdateUserInfoResponse> phoneCall = apiService.updatePhoneNumber(new UpdatePhoneNumberRequest(userId, finalCheckTextInput.getText().toString(), content));
+                            Call<UpdateUserInfoResponse> phoneCall = apiService.updatePhoneNumber(
+                                    new UpdatePhoneNumberRequest(userId, type == SET_INFO_PHONE ? " " : finalCheckTextInput.getText().toString(), content));
                             phoneCall.enqueue(new Callback<UpdateUserInfoResponse>() {
                                 @Override
                                 public void onResponse(Call<UpdateUserInfoResponse> call, Response<UpdateUserInfoResponse> response) {
