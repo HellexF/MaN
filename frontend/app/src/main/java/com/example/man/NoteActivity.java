@@ -74,7 +74,6 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         signature = SharedPreferencesManager.getUserSignature(this);
         if (Objects.equals(signature, "")) signature = "未设置";
 
-
         display = 0;
         data.add("收集箱");
         category = "收集箱";

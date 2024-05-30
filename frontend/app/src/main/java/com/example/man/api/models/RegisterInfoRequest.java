@@ -1,5 +1,7 @@
 package com.example.man.api.models;
 
+import java.util.Objects;
+
 public class RegisterInfoRequest {
     private String username;
     private String password;
@@ -9,8 +11,10 @@ public class RegisterInfoRequest {
     public RegisterInfoRequest(String username, String password, String phone_number, String email) {
         this.username = username;
         this.password = password;
-        this.phone_number = phone_number;
-        this.email = email;
+        if (Objects.equals(phone_number, "")) this.phone_number = null;
+        else this.phone_number = phone_number;
+        if (Objects.equals(email, "")) this.email = null;
+        else this.email = email;
     }
 
     public String getUsername() {
