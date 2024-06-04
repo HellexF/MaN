@@ -54,4 +54,8 @@ dependencies {
     implementation("me.spark:submitbutton:1.0.1")
     implementation("com.github.bumptech.glide:glide:4.13.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.0")
+    implementation("com.shizhefei:MultiTypeView:1.0.1")
+    implementation("com.android.support:support-v4:28.0.0")
+    implementation("com.android.support:recyclerview-v7:28.0.0")
+    implementation("com.wajahatkarim3.BufferTextInputLayout:buffertextinputlayout:1.2.0")
 }

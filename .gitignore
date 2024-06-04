@@ -15,4 +15,5 @@
 /frontend/local.properties
 
 /backend/.idea/
+/backend/db.sqlite3
 .DS_Store

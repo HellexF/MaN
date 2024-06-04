@@ -32,3 +32,12 @@ class CreateCategoryView(APIView):
                             status=status.HTTP_201_CREATED)
         except NoteUser.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class DeleteCategoryView(APIView):
+    def delete(self, request, category_id):
+        try:
+            category = Category.objects.get(id=category_id)
+            category.delete()
+            return Response({'message': 'Category deleted successfully'}, status=status.HTTP_200_OK)
+        except Category.DoesNotExist:
+            return Response({'message': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)

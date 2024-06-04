@@ -16,7 +16,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         // 检查用户是否已登录
         if (SharedPreferencesManager.getLoginStatus(this)) {
             // 如果用户已登录，跳转到笔记页面
-            Intent intent = new Intent(SplashScreenActivity.this, NoteActivity.class);
+            Intent intent = new Intent(SplashScreenActivity.this, NoteContentActivity.class);
             startActivity(intent);
         } else {
             Intent intent = new Intent(SplashScreenActivity.this, MainActivity.class);

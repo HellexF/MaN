@@ -4,7 +4,6 @@ public class CreateCategoryResponse {
     private int id;
     private String name;
 
-    // 构造函数
     public CreateCategoryResponse(int id, String name) {
         this.id = id;
         this.name = name;

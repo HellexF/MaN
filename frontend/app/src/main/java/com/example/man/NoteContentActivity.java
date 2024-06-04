@@ -3,6 +3,7 @@ package com.example.man;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -16,6 +17,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.os.EnvironmentCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.Layout;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.inputmethod.EditorInfo;
 
 import android.graphics.drawable.Drawable;
 import android.media.MediaRecorder;
@@ -33,6 +43,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -42,9 +53,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
-public class NoteContentActivity extends AppCompatActivity implements TextWatcher, View.OnClickListener{
+import com.example.man.adapters.NoteContentAdapter;
+import com.example.man.views.NoteEditText;
+
+public class NoteContentActivity extends AppCompatActivity implements View.OnClickListener, NoteContentAdapter.OnItemViewClickListener{
     private View mContainer;
+    private TextView mTitleTextView;
+    private EditText mTitleEdit;
     private EditText mEditText;
+    private RecyclerView mNoteContentList;
+    private ArrayList<NoteContent> noteContents;
+    private NoteContentAdapter noteContentAdapter;
     private LinearLayout toolbarContainer;
     private Button photoTool;
     private Button voiceTool;
@@ -67,6 +86,8 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
     private long pausedTime = 0L;
     private long pauseStartTime = 0L;
     private Uri audioUri;
+    private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
+    LinearLayoutManager mLayoutManager;
 
 
     @Override
@@ -75,26 +96,139 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
         setContentView(R.layout.activity_note_content);
 
         mContainer = findViewById(R.id.container);
-        mEditText = findViewById(R.id.edit_view);
-        mEditText.addTextChangedListener(this);
+        mTitleEdit = findViewById(R.id.title_edit_view);
+        mTitleTextView = findViewById(R.id.title_text_view);
+        mNoteContentList = findViewById(R.id.note_content_list);
+        // TODO 判断应该显示哪个
+        mTitleEdit.setVisibility(View.VISIBLE);
+        mTitleTextView.setVisibility(View.GONE);
+
+        mTitleEdit.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                getWindow().getDecorView().getViewTreeObserver().removeOnGlobalLayoutListener(keyboardListener);
+                closePopupWindow();
+                return false;
+            }
+        });
+
+        mTitleTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTitleEdit();
+            }
+        });
+
+        mContainer.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mTitleEdit.hasFocus()) {
+                    mTitleEdit.clearFocus();
+                }
+                return false;
+            }
+        });
+
+        // 点击回车时失焦
+        mTitleEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_NULL) {
+                    mTitleEdit.clearFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mTitleEdit.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+                if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                    mTitleEdit.clearFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        // 设置失焦时的处理逻辑
+        mTitleEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard();
+                    getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
+
+                    if (mTitleEdit.getText().toString().trim().isEmpty()) {
+                        mTitleEdit.setVisibility(View.VISIBLE);
+                        mTitleTextView.setVisibility(View.GONE);
+                    } else {
+                        mTitleTextView.setText(mTitleEdit.getText().toString().trim());
+                        mTitleEdit.setVisibility(View.GONE);
+                        mTitleTextView.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+
+        // mEditText = findViewById(R.id.edit_view);
+        // mEditText.addTextChangedListener(this);
 
         // 键盘工具栏
-        getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(new KeyboardOnGlobalChangeListener());
+        keyboardListener = new KeyboardOnGlobalChangeListener();
+        getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
+
+        noteContents = new ArrayList<NoteContent>();
+        noteContents.add(new NoteContent(0, ""));
+        noteContentAdapter = new NoteContentAdapter(this, noteContents, this);
+        mNoteContentList.setLayoutManager(new LinearLayoutManager(this));
+        mNoteContentList.setAdapter(noteContentAdapter);
+        mNoteContentList.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mTitleEdit.clearFocus();
+                    clearEditTextFocus(v);
+                }
+                return false;
+            }
+        });
+        mLayoutManager = new LinearLayoutManager(this);
+        mNoteContentList.setLayoutManager(mLayoutManager);
+
+        mTitleTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTitleEdit();
+            }
+        });
     }
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+    private void clearEditTextFocus(View view) {
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+        mNoteContentList.clearFocus();
     }
 
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+    private void showTitleEdit() {
+        mTitleTextView.setVisibility(View.GONE);
+        mTitleEdit.setVisibility(View.VISIBLE);
+        mTitleEdit.requestFocus();
+        showKeyboard();
     }
 
-    @Override
-    public void afterTextChanged(Editable s) {
+    private void showKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.showSoftInput(mTitleEdit, InputMethodManager.SHOW_IMPLICIT);
+    }
 
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mTitleEdit.getWindowToken(), 0);
     }
 
     @Override
@@ -105,6 +239,36 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
         } else if (id == R.id.voice_tool) {
             showVoiceOptions();
         }
+    }
+
+    @Override
+    public void onItemViewClick(View view) {
+        NoteEditText editText = (NoteEditText) view;
+        editText.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                int selStart = editText.getSelectionStart();
+                int selEnd = editText.getSelectionEnd();
+
+                Layout layout = editText.getLayout();
+                int line = layout.getLineForOffset(selStart);
+                int baseline = layout.getLineBaseline(line);
+
+                // 获取光标的纵坐标
+                int cursorY = baseline + 10;
+
+                // 如果光标超过了屏幕底部，说明被软键盘遮挡
+                if (cursorY > 970) {
+                    // 计算需要滚动的距离
+                    int scrollDistance = cursorY - 970;
+
+                    // 滚动RecyclerView，使焦点所在的行位于软键盘上方
+                    mNoteContentList.scrollBy(0, scrollDistance);
+                }
+
+                return true;
+            }
+        });
     }
 
     private void showPhotoOptions() {
@@ -130,12 +294,14 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
             @Override
             public void onClick(View v) {
                 choosePhotoFromGallery();
+                dialog.dismiss();
             }
         });
         buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkPermissionAndCamera();
+                dialog.dismiss();
             }
         });
 
@@ -480,7 +646,7 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CODE_SELECT_PHOTO) {
                 Uri selectedImageUri = data.getData();
-                // Handle the selected image URI
+                addImageContent(selectedImageUri);
             } else if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
                 if (isAndroidQ) {
                     // Android 10 使用图片uri加载
@@ -496,6 +662,14 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
                 }
             }
         }
+    }
+
+    private void addImageContent(Uri imageUri) {
+        noteContents.add(new NoteContent(NoteContent.IMAGE_TYPE_CONTENT, imageUri.toString()));
+        noteContents.add(new NoteContent(NoteContent.TEXT_TYPE_CONTENT, ""));
+
+        noteContentAdapter.notifyItemInserted(noteContents.size() - 2);
+        noteContentAdapter.notifyItemInserted(noteContents.size() - 1);
     }
 
     private void showKeyboardTopPopupWindow(int x, int y) {
@@ -545,7 +719,7 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
         }
     }
 
-    private class KeyboardOnGlobalChangeListener implements ViewTreeObserver.OnGlobalLayoutListener {
+    public class KeyboardOnGlobalChangeListener implements ViewTreeObserver.OnGlobalLayoutListener {
 
         private int getScreenHeight() {
             return  ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
@@ -555,6 +729,12 @@ public class NoteContentActivity extends AppCompatActivity implements TextWatche
         private int getScreenWidth() {
             return ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
                     .getDefaultDisplay().getWidth();
+        }
+
+        public int getKeyboardHeight(){
+            Rect rect = new Rect();
+            getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+            return getWindow().getDecorView().getBottom() - rect.bottom;
         }
 
         @Override

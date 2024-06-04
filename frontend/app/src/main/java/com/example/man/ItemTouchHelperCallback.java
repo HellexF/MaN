@@ -38,6 +38,11 @@ public class ItemTouchHelperCallback extends ItemTouchHelperExtension.Callback {
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
+        // 忽略第一个
+        if (position == 0){
+            mAdapter.notifyItemChanged(position);
+            return;
+        }
         if (mAdapter.isDeletable(position)) {
             mAdapter.removeItem(position);
         } else {
@@ -66,6 +71,10 @@ public class ItemTouchHelperCallback extends ItemTouchHelperExtension.Callback {
 
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+        if (viewHolder.getAdapterPosition() == 0) {
+            // 如果是第一个元素，不进行任何绘制
+            return;
+        }
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             View itemView = viewHolder.itemView;
             float height = (float) itemView.getBottom() - (float) itemView.getTop();

@@ -4,6 +4,7 @@ import com.example.man.api.models.CheckEmailAvailableResponse;
 import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
+import com.example.man.api.models.DeleteCategoryResponse;
 import com.example.man.api.models.EmailRequest;
 import com.example.man.api.models.GetCategoriesResponse;
 import com.example.man.api.models.LoginInfoRequest;
@@ -24,6 +25,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
@@ -62,5 +64,7 @@ public interface ApiService {
     Call<GetCategoriesResponse> getCategories(@Path("user_id") int Id);
     @POST("/category/create_category")
     Call<CreateCategoryResponse> createCategory(@Body CreateCategoryRequest createCategoryRequest);
+    @DELETE("/category/delete_category/{category_id}/")
+    Call<DeleteCategoryResponse> deleteCategory(@Path("category_id") int Id);
 
 }

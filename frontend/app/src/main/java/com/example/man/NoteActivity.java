@@ -146,6 +146,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                 recyclerView = findViewById(R.id.recyclerView);
                 recyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
                 adapter = new NoteCategoriesAdapter(data);
+                adapter.setContext(NoteActivity.this);
                 adapter.setOnItemSelectedListener(NoteActivity.this);
                 recyclerView.setAdapter(adapter);
                 // 设置滑动菜单项删除

@@ -1,29 +1,53 @@
 package com.example.man.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.man.LoginActivity;
+import com.example.man.NoteActivity;
 import com.example.man.R;
+import com.example.man.api.ApiClient;
+import com.example.man.api.ApiService;
 import com.example.man.api.models.Category;
+import com.example.man.api.models.DeleteCategoryResponse;
+import com.example.man.api.models.LoginResponse;
+import com.example.man.api.models.UserInfoResponse;
+import com.example.man.utils.SharedPreferencesManager;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAdapter.MyViewHolder> {
     private List<Category> data;
     private int selectedItem = 0;
     private OnItemSelectedListener onItemSelectedListener;
+    private Context mContext;
 
     public interface OnItemSelectedListener {
         void onItemSelected(String text);
+    }
+
+    public void setContext (Context context){
+        this.mContext = context;
     }
 
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
@@ -52,8 +76,20 @@ public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAd
     }
 
     public void removeItem(int position) {
-        data.remove(position);
-        notifyItemRemoved(position);
+        ApiService apiService = ApiClient.getClient().create(ApiService.class);
+        Call<DeleteCategoryResponse> call = apiService.deleteCategory(data.get(position).getId());;
+        call.enqueue(new Callback<DeleteCategoryResponse>() {
+            @Override
+            public void onResponse(Call<DeleteCategoryResponse> call, Response<DeleteCategoryResponse> response) {
+                data.remove(position);
+                notifyItemRemoved(position);
+            }
+
+            @Override
+            public void onFailure(Call<DeleteCategoryResponse> call, Throwable t) {
+                Toast.makeText(mContext, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public boolean isItemExist(String text) {
