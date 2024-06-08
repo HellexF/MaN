@@ -6,6 +6,8 @@ import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
 import com.example.man.api.models.DeleteCategoryResponse;
 import com.example.man.api.models.EmailRequest;
+import com.example.man.api.models.EmotionRequest;
+import com.example.man.api.models.EmotionResponse;
 import com.example.man.api.models.GetCategoriesResponse;
 import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
@@ -60,11 +62,12 @@ public interface ApiService {
     Call<UpdateUserInfoResponse> updatePhoneNumber(@Body UpdatePhoneNumberRequest request);
     @PATCH("/user/update_password")
     Call<UpdateUserInfoResponse> updatePassword(@Body UpdatePasswordRequest request);
+    @POST("/user/get_emotion")
+    Call<EmotionResponse> getEmotion(@Body EmotionRequest request);
     @GET("/category/get_categories/{user_id}/")
     Call<GetCategoriesResponse> getCategories(@Path("user_id") int Id);
     @POST("/category/create_category")
     Call<CreateCategoryResponse> createCategory(@Body CreateCategoryRequest createCategoryRequest);
     @DELETE("/category/delete_category/{category_id}/")
     Call<DeleteCategoryResponse> deleteCategory(@Path("category_id") int Id);
-
 }

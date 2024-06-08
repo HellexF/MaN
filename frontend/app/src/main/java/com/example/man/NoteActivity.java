@@ -261,5 +261,6 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     public void onItemSelected(String text) {
         category = text;
         categoryTextView.setText(category);
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 }
