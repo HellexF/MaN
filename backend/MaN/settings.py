@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "user",
     "note",
     "category",
+    "content",
 ]
 
 MIDDLEWARE = [

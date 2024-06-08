@@ -43,7 +43,7 @@ public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAd
     private Context mContext;
 
     public interface OnItemSelectedListener {
-        void onItemSelected(String text);
+        void onItemSelected(Category item);
     }
 
     public void setContext (Context context){
@@ -147,7 +147,7 @@ public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAd
             adapter.setSelectedItem(position);
             adapter.notifyDataSetChanged();
             if (adapter.onItemSelectedListener != null) {
-                adapter.onItemSelectedListener.onItemSelected(adapter.data.get(position).getName());
+                adapter.onItemSelectedListener.onItemSelected(adapter.data.get(position));
             }
         }
     }

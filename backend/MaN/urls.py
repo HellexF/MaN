@@ -27,5 +27,6 @@ urlpatterns = [
     path('user/', include('user.urls')),
     path('note/', include('note.urls')),
     path('category/', include('category.urls')),
+    path('content/', include('content.urls')),
     url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
 ]

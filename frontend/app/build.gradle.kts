@@ -37,7 +37,6 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui:2.7.7")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
-    // https://mvnrepository.com/artifact/com.a520wcf.yllistview/YLListView
     implementation("com.a520wcf.yllistview:YLListView:1.0.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.github.apg-mobile:android-round-textview:v1.0.0")
@@ -45,6 +44,7 @@ dependencies {
     implementation("io.github.youth5201314:banner:2.2.3")
     implementation("com.github.bumptech.glide:glide:4.12.0")
     implementation("com.loopeer.library:itemtouchhelperextension:1.0.6")
+    implementation("com.github.markushi:circlebutton:1.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

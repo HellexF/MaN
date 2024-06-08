@@ -48,8 +48,6 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            category = Category(user=user, name="收集箱")
-            category.save()
             return Response({'message': 'User registered successfully', 'id': user.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -86,7 +84,6 @@ class UserInfoView(APIView):
 class UploadAvatarView(APIView):
     def post(self, request):
         user_id = request.data.get('id')
-        print(request.data)
         try:
             user = NoteUser.objects.get(id=user_id)
         except NoteUser.DoesNotExist:
@@ -138,7 +135,6 @@ class UpdateEmailView(APIView):
 
 class UpdatePhoneNumberView(APIView):
     def patch(self, request):
-        print(request.data)
         serializer = PhoneUpdateSerializer(data=request.data)
         if serializer.is_valid():
             try:

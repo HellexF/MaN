@@ -52,7 +52,9 @@
         <activity android:name=".EmailLoginActivity"></activity>
         <activity android:name=".RegisterActivity"></activity>
         <activity android:name=".LoginActivity"></activity>
-        <activity android:name=".NoteActivity"></activity>
+        <activity
+            android:name=".NoteActivity"
+            android:windowSoftInputMode="adjustPan"></activity>
         <activity android:name=".InfoActivity"></activity>
         <activity android:name=".NoteContentActivity"></activity>
     </application>
