@@ -63,7 +63,7 @@ import retrofit2.Response;
 
 public class NoteActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, NoteCategoriesAdapter.OnItemSelectedListener,
-        NoteListAdapter.OnNoteClickListener
+        NoteListAdapter.OnNoteClickListener, NoteListAdapter.OnItemChangeCategoryListener
 {
     private String username = "";
     private String signature = "";
@@ -229,7 +229,7 @@ public class NoteActivity extends AppCompatActivity
             @Override
             public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
                 noteInfo.addAll(response.body().getNoteInfo());
-                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo, NoteActivity.this);
+                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo, NoteActivity.this, NoteActivity.this);
                 noteRecyclerView.setAdapter(noteListAdapter);
                 noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
             }

@@ -101,20 +101,22 @@ class UploadView(APIView):
         random_filename = str(uuid.uuid4())
         directory_path = ""
         file_path = ""
+        content = "http://10.0.0.2:8000/media"
 
         if type == 1:
             directory_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{id}')
             file_path = os.path.join(directory_path, random_filename + '.jpg')
+            content = content + f'/media/images/note_images/{id}/{random_filename}.jpg'
         elif type == 2:
             directory_path = os.path.join(settings.MEDIA_ROOT, 'audios', 'note_audios', f'{id}')
             file_path = os.path.join(directory_path, random_filename + '.mp3')
-
+            content = content + f'/media/audios/note_audios/{id}/{random_filename}.mp3'
 
         os.makedirs(directory_path)
 
         with open(file_path, 'wb') as f:
             f.write(file)
-        return Response({'type': type, 'content': '10.0.0.2:8000/media' + file_path}, status=status.HTTP_200_OK)
+        return Response({'type': type, 'content': content}, status=status.HTTP_200_OK)
 
 class UploadNoteContentsView(APIView):
     def post(self, request):

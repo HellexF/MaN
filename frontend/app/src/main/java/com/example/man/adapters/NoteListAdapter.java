@@ -47,10 +47,10 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
     }
 
     public NoteListAdapter(Context context, List<NoteInfo> data, OnNoteClickListener listener, OnItemChangeCategoryListener listener_) {
-        mContext = context;
-        noteInfo = data;
-        noteClickListener = listener;
-        listener = listener_;
+        this.mContext = context;
+        this.noteInfo = data;
+        this.noteClickListener = listener;
+        this.listener = listener_;
         
     }
 
