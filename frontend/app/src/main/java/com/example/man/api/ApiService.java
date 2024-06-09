@@ -6,6 +6,7 @@ import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
 import com.example.man.api.models.CreateNoteRequest;
 import com.example.man.api.models.DeleteCategoryResponse;
+import com.example.man.api.models.NoteContentsRequest;
 import com.example.man.api.models.DeleteNoteResponse;
 import com.example.man.api.models.EmailRequest;
 import com.example.man.api.models.EmotionRequest;
@@ -16,19 +17,27 @@ import com.example.man.api.models.GetNoteInfoResponse;
 import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
 import com.example.man.api.models.CreateNoteResponse;
+import com.example.man.api.models.MessageResponse;
 import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.api.models.RegisterInfoRequest;
 import com.example.man.api.models.RegistrationResponse;
 import com.example.man.api.models.SearchNoteRequest;
 import com.example.man.api.models.SearchNoteResponse;
 import com.example.man.api.models.UpdateEmailRequest;
+import com.example.man.api.models.UpdateNoteEmotionRequest;
+import com.example.man.api.models.UpdateNoteTitleRequest;
 import com.example.man.api.models.UpdatePasswordRequest;
 import com.example.man.api.models.UpdatePhoneNumberRequest;
 import com.example.man.api.models.UpdateSignatureRequest;
 import com.example.man.api.models.UpdateUserInfoResponse;
 import com.example.man.api.models.UpdateUsernameRequest;
 import com.example.man.api.models.UploadAvatarResponse;
+import com.example.man.api.models.UploadRequest;
+import com.example.man.api.models.UploadResponse;
 import com.example.man.api.models.UserInfoResponse;
+import com.example.man.models.NoteContent;
+
+import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -39,8 +48,10 @@ import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     @POST("/user/check_phone_number_available")
@@ -85,4 +96,22 @@ public interface ApiService {
     Call<DeleteNoteResponse> deleteNote(@Path("note_id") int Id);
     @PATCH("/content/search_note")
     Call<SearchNoteResponse> searchNote(@Body SearchNoteRequest request);
+    @POST("/content/get_note_contents")
+    Call<List<NoteContent>> getNoteContents(@Body NoteContentsRequest request);
+    @POST("/content/delete_note_contents")
+    Call<MessageResponse> deleteNoteContents(@Body NoteContentsRequest request);
+    @POST("/content/upload_note_contents")
+    Call<MessageResponse> uploadNoteContents(@Body List<NoteContent> request);
+    @PUT("/note/update_title/{note_id}/")
+    Call<MessageResponse> updateNoteTitle(
+            @Path("note_id") int noteId,
+            @Body UpdateNoteTitleRequest request
+    );
+    @PUT("/note/update_emotion/{note_id}/")
+    Call<MessageResponse> updateNoteEmotion(
+            @Path("note_id") int noteId,
+            @Body UpdateNoteEmotionRequest request
+    );
+    @POST("/content/upload")
+    Call<UploadResponse> uploadContent(@Body UploadRequest request);
 }

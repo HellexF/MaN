@@ -71,17 +71,13 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         void onTextChanged(int position, String content);
     }
 
-    // 设置监听器方法
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        mListener = listener;
-    }
-
     public NoteContentAdapter(Context context, List<NoteContent> data, OnItemViewClickListener listener, OnItemDeleteListener itemDeleteListener,
-    OnItemReplaceListener itemReplaceListener, OnTextChangedListener textChangedListener
+    OnItemReplaceListener itemReplaceListener, OnTextChangedListener textChangedListener, OnItemClickListener itemClickListener
     ) {
         this.mData = data;
         this.mInflater = LayoutInflater.from(context);
         this.mContext = context;
+        this.mListener = itemClickListener;
         this.mItemListener = listener;
         this.mItemDeleteListener = itemDeleteListener;
         this.mItemReplaceListener = itemReplaceListener;
@@ -173,16 +169,16 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                     }
                 }
             });
-            editText.setOnTouchListener(new View.OnTouchListener() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public boolean onTouch(View v, MotionEvent event) {
+                public void onClick(View v) {
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             listener.onItemClick(position);
                         }
                     }
-                    return false;
+                    editText.show();
                 }
             });
         }
@@ -329,6 +325,18 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             deleteAudioButton = itemView.findViewById(R.id.delete_audio_button);
             replaceAudioButton = itemView.findViewById(R.id.replace_audio_button);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            listener.onItemClick(position);
+                        }
+                    }
+                }
+            });
+
             playPauseButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -409,4 +417,5 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             setAudioUri(Uri.parse(noteContent.getContent()));
         }
     }
+
 }

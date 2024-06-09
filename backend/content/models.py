@@ -10,4 +10,4 @@ class Content(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     content_id = models.AutoField(primary_key=True)
     type = models.IntegerField()
-    content = models.CharField(max_length=200)
+    content = models.CharField(max_length=200, blank=True, null=True)

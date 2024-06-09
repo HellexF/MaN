@@ -162,6 +162,7 @@ class UpdatePasswordView(APIView):
 class GetEmotionView(APIView):
     def post(self, request):
         try:
+            print(request.data)
             client = OpenAI(
                 api_key="sk-3pFwaXe1DVsYCSLVc2QX47CKDHQXrMTDzGySjjrV7HckpvaB",
                 base_url="https://api.moonshot.cn/v1",

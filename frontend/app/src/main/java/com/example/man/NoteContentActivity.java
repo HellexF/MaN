@@ -1,12 +1,21 @@
 package com.example.man;
 
+import static com.example.man.utils.FileUtils.readFileBytesFromUri;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -53,21 +62,31 @@ import android.Manifest;
 import com.example.man.adapters.NoteContentAdapter;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
+import com.example.man.api.models.UpdateNoteEmotionRequest;
+import com.example.man.api.models.UpdateNoteTitleRequest;
 import com.example.man.api.models.EmotionRequest;
 import com.example.man.api.models.EmotionResponse;
+import com.example.man.api.models.MessageResponse;
+import com.example.man.api.models.NoteContentsRequest;
+import com.example.man.api.models.UploadRequest;
+import com.example.man.api.models.UploadResponse;
 import com.example.man.models.NoteContent;
+import com.example.man.utils.SharedPreferencesManager;
 import com.example.man.views.NoteEditText;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class NoteContentActivity extends AppCompatActivity
         implements View.OnClickListener, NoteContentAdapter.OnItemViewClickListener, NoteContentAdapter.OnItemReplaceListener,
-        NoteContentAdapter.OnTextChangedListener, NoteContentAdapter.OnItemDeleteListener
+        NoteContentAdapter.OnTextChangedListener, NoteContentAdapter.OnItemDeleteListener, NoteContentAdapter.OnItemClickListener
 {
     private View mContainer;
     private TextView mTitleTextView;
+    private TextView mModifiedTimeView;
     private EditText mTitleEdit;
     private EditText mEditText;
     private RecyclerView mNoteContentList;
@@ -78,6 +97,9 @@ public class NoteContentActivity extends AppCompatActivity
     private Button voiceTool;
     private ImageButton backButton;
     private PopupWindow keyboardToolBar;
+    private int note_id;
+    private int user_id;
+    private int category_id;
     private boolean keyboardShowing = false;
     private static final int REQUEST_CODE_SELECT_PHOTO = 1;
     private static final int REQUEST_CODE_TAKE_PHOTO = 2;
@@ -101,6 +123,7 @@ public class NoteContentActivity extends AppCompatActivity
     private String textAfterCursor = "";
     private int currentPos;
     private boolean toReplaceItem = false;
+    private boolean editFocused = false;
     private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
     LinearLayoutManager mLayoutManager;
     ApiService apiService = ApiClient.getClient().create(ApiService.class);
@@ -110,46 +133,38 @@ public class NoteContentActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_content);
+        Intent intent = getIntent();
 
         mContainer = findViewById(R.id.container);
         mTitleEdit = findViewById(R.id.title_edit_view);
         mTitleTextView = findViewById(R.id.title_text_view);
+        mModifiedTimeView = findViewById(R.id.note_modified_time);
         mNoteContentList = findViewById(R.id.note_content_list);
+
+        mModifiedTimeView.setText(intent.getCharSequenceExtra("last_modified"));
 
         // 设置返回按钮
         backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 情绪追踪
-                // TODO：设置prompt为笔记内容
-                Call<EmotionResponse> call = apiService.getEmotion(new EmotionRequest(""));
-                call.enqueue(new Callback<EmotionResponse>() {
-                    @Override
-                    public void onResponse(Call<EmotionResponse> call, Response<EmotionResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            EmotionResponse emotionResponse = response.body();
-                            String emotion = emotionResponse.getEmotionMessage();
-                            // TODO：设置笔记的情绪tag
-                        } else {
-                            Toast.makeText(NoteContentActivity.this, "请求错误", Toast.LENGTH_LONG).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<EmotionResponse> call, Throwable t) {
-                        Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
-                    }
-                });
-                // 回到主界面
-                Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
-                startActivity(intent);
+                saveNote();
             }
         });
 
-        // TODO 判断应该显示哪个
-        mTitleEdit.setVisibility(View.VISIBLE);
-        mTitleTextView.setVisibility(View.GONE);
+        note_id = intent.getIntExtra("note_id", -1);
+        category_id = intent.getIntExtra("category_id", -1);
+        user_id = Integer.parseInt(SharedPreferencesManager.getUserId(this));
+
+        mTitleTextView.setText(intent.getStringExtra("title"));
+        if(mTitleTextView.getText().toString().equals("未命名")){
+            mTitleEdit.setVisibility(View.VISIBLE);
+            mTitleTextView.setVisibility(View.GONE);
+        }
+        else {
+            mTitleEdit.setVisibility(View.GONE);
+            mTitleTextView.setVisibility(View.VISIBLE);
+        }
 
         mTitleEdit.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -208,13 +223,17 @@ public class NoteContentActivity extends AppCompatActivity
                     hideKeyboard();
                     getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
 
-                    if (mTitleEdit.getText().toString().trim().isEmpty()) {
+
+                    String title = mTitleEdit.getText().toString().trim();
+                    if (title.isEmpty()) {
                         mTitleEdit.setVisibility(View.VISIBLE);
                         mTitleTextView.setVisibility(View.GONE);
+                        mTitleTextView.setText("未命名");
                     } else {
                         mTitleTextView.setText(mTitleEdit.getText().toString().trim());
                         mTitleEdit.setVisibility(View.GONE);
                         mTitleTextView.setVisibility(View.VISIBLE);
+                        mTitleTextView.setText(title);
                     }
                 }
             }
@@ -225,8 +244,29 @@ public class NoteContentActivity extends AppCompatActivity
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
 
         noteContents = new ArrayList<NoteContent>();
-        noteContents.add(new NoteContent(0, ""));
-        noteContentAdapter = new NoteContentAdapter(this, noteContents, this, this, this, this);
+        if(intent.getBooleanExtra("not_saved", false)){
+            noteContents.add(new NoteContent(0, "", note_id, user_id, category_id));
+        }
+        else{
+            Call<List<NoteContent>> call = apiService.getNoteContents(new NoteContentsRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteContentActivity.this)), note_id));
+            call.enqueue(new Callback<List<NoteContent>>() {
+                @Override
+                public void onResponse(Call<List<NoteContent>> call, Response<List<NoteContent>> response) {
+                    if (response.isSuccessful()) {
+                        List<NoteContent> contents = response.body();
+                        noteContents.addAll(contents);
+                        noteContentAdapter.notifyDataSetChanged();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<NoteContent>> call, Throwable t) {
+                    Toast.makeText(NoteContentActivity.this, "网络链接错误", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        noteContentAdapter = new NoteContentAdapter(this, noteContents, this,
+                this, this, this, this);
         mNoteContentList.setLayoutManager(new LinearLayoutManager(this));
         mNoteContentList.setAdapter(noteContentAdapter);
         mNoteContentList.setOnTouchListener(new View.OnTouchListener() {
@@ -234,18 +274,21 @@ public class NoteContentActivity extends AppCompatActivity
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     mTitleEdit.clearFocus();
-                    clearEditTextFocus(v);
+                    if(editFocused){
+                        clearEditTextFocus(v);
+                        editFocused = false;
+                    }
+                    else {
+                        RecyclerView.ViewHolder viewHolder = mNoteContentList.findViewHolderForAdapterPosition(noteContents.size() - 1);
+                        if (viewHolder != null) {
+                            viewHolder.itemView.performClick();
+                        }
+                    }
                 }
                 return false;
             }
         });
 
-        noteContentAdapter.setOnItemClickListener(new NoteContentAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                currentPos = position;
-            }
-        });
         mLayoutManager = new LinearLayoutManager(this);
         mNoteContentList.setLayoutManager(mLayoutManager);
 
@@ -255,6 +298,14 @@ public class NoteContentActivity extends AppCompatActivity
                 showTitleEdit();
             }
         });
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        currentPos = position;
+        if(noteContents.get(position).getType() == NoteContent.TEXT_TYPE_CONTENT){
+            editFocused = true;
+        }
     }
 
     private void clearEditTextFocus(View view) {
@@ -773,8 +824,8 @@ public class NoteContentActivity extends AppCompatActivity
     private void addContent(Uri imageUri, int type) {
         if(noteContentAdapter.getItemViewType(currentPos) == NoteContentAdapter.TEXT_TYPE){
             noteContents.get(currentPos).setContent(textBeforeCursor);
-            noteContents.add(currentPos + 1, new NoteContent(type, imageUri.toString()));
-            noteContents.add(currentPos + 2, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, textAfterCursor));
+            noteContents.add(currentPos + 1, new NoteContent(type, imageUri.toString(), note_id, user_id, category_id));
+            noteContents.add(currentPos + 2, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, textAfterCursor, note_id, user_id, category_id));
 
             noteContentAdapter.notifyItemChanged(currentPos);
             noteContentAdapter.notifyItemInserted(currentPos + 1);
@@ -782,11 +833,12 @@ public class NoteContentActivity extends AppCompatActivity
         }
         else
         {
-            noteContents.add(currentPos + 1, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, ""));
-            noteContents.add(currentPos + 2, new NoteContent(type, imageUri.toString()));
+            noteContents.add(currentPos + 1, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, "", note_id, user_id, category_id));
+            noteContents.add(currentPos + 2, new NoteContent(type, imageUri.toString(), note_id, user_id, category_id));
 
             noteContentAdapter.notifyItemInserted(currentPos + 1);
         }
+        currentPos += 2;
     }
 
     private void showKeyboardTopPopupWindow(int x, int y) {
@@ -871,5 +923,138 @@ public class NoteContentActivity extends AppCompatActivity
                 keyboardShowing = false;
             }
         }
+    }
+
+    private void saveNote(){
+        mTitleEdit.clearFocus();
+        String title = mTitleTextView.getText().toString();
+
+        // 更新标题
+        Call<MessageResponse> updateTitleCall = apiService.updateNoteTitle(note_id, new UpdateNoteTitleRequest(title.isEmpty() ? "未命名" : title));
+        updateTitleCall.enqueue(new Callback<MessageResponse>() {
+            @Override
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                if(response.isSuccessful()){
+                    // 删除先前的所有记录
+                    Call<MessageResponse> deleteContentsCall = apiService.deleteNoteContents(
+                            new NoteContentsRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteContentActivity.this)), note_id));
+                    deleteContentsCall.enqueue(new Callback<MessageResponse>() {
+                        @Override
+                        public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                            if (response.isSuccessful()){
+                                // 上传所有图片和音频
+                                int count = 0;
+                                for (NoteContent content: noteContents){
+                                    count += content.getType() != NoteContent.TEXT_TYPE_CONTENT ? 1 : 0;
+                                }
+
+
+                                final CountDownLatch latch = new CountDownLatch(count);
+
+                                for (NoteContent content : noteContents) {
+                                    if (content.getType() != 0) {
+                                        // 处理图片或音频文件
+                                        Uri fileUri = Uri.parse(content.getContent());
+                                        byte[] fileBytes = new byte[0];
+                                        try {
+                                            fileBytes = readFileBytesFromUri(NoteContentActivity.this, fileUri);
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        apiService.uploadContent(new UploadRequest(fileBytes, note_id, content.getType())).enqueue(new Callback<UploadResponse>() {
+                                            @Override
+                                            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+                                                content.setContent(response.body().getContent());
+                                                latch.countDown();
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<UploadResponse> call, Throwable t) {
+                                                latch.countDown();
+                                            }
+                                        });
+                                    }
+                                }
+
+                                new Thread(() -> {
+                                    try {
+                                        latch.await();
+                                        // 保存所有content
+                                        Call<MessageResponse> uploadContenscall = apiService.uploadNoteContents(noteContents);
+                                        uploadContenscall.enqueue(new Callback<MessageResponse>() {
+                                            @Override
+                                            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                                                if (response.isSuccessful()) {
+                                                    // 情绪追踪
+
+                                                    StringBuilder prompt = new StringBuilder();
+                                                    for(NoteContent content: noteContents){
+                                                        if(content.getType() == NoteContent.TEXT_TYPE_CONTENT){
+                                                            prompt.append(content.getContent());
+                                                        }
+                                                    }
+
+                                                    if(prompt.length() > 0){
+                                                        Call<EmotionResponse> emotionCall = apiService.getEmotion(new EmotionRequest(prompt.toString()));
+                                                        String finalPrompt = prompt.toString();
+                                                        emotionCall.enqueue(new Callback<EmotionResponse>() {
+                                                            @Override
+                                                            public void onResponse(Call<EmotionResponse> call, Response<EmotionResponse> response) {
+                                                                if (response.isSuccessful() && response.body() != null) {
+                                                                    EmotionResponse emotionResponse = response.body();
+                                                                    String emotion = emotionResponse.getEmotionMessage();
+                                                                    Call<MessageResponse> updateEmotionCall = apiService.updateNoteEmotion(note_id, new UpdateNoteEmotionRequest(finalPrompt.isEmpty() ? "无": emotion));
+                                                                    updateEmotionCall.enqueue(new Callback<MessageResponse>() {
+                                                                        @Override
+                                                                        public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                                                                            // 回到主界面
+                                                                            Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
+                                                                            startActivity(intent);
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onFailure(Call<MessageResponse> call, Throwable t) {
+                                                                            Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }
+
+                                                            @Override
+                                                            public void onFailure(Call<EmotionResponse> call, Throwable t) {
+                                                                Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                                                Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }).start();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MessageResponse> call, Throwable t) {
+                            Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

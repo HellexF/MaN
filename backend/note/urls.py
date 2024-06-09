@@ -17,4 +17,14 @@ urlpatterns = [
         views.DeleteNoteView.as_view(),
         name='delete_note'
     ),
+    path(
+        "update_title/<int:note_id>/",
+        views.UpdateNoteTitleView.as_view(),
+        name='update_note_title'
+    ),
+    path(
+        "update_emotion/<int:note_id>/",
+        views.UpdateNoteEmotionView.as_view(),
+        name='update_note_emotion'
+    ),
 ]

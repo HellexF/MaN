@@ -33,10 +33,16 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
     private Context mContext;
     private static final int TYPE_LIST = 0;
     private static final int TYPE_GRID = 1;
+    private OnNoteClickListener noteClickListener;
 
-    public NoteListAdapter(Context context, List<NoteInfo> data) {
+    public interface OnNoteClickListener{
+        void onNoteClick(int position);
+    }
+
+    public NoteListAdapter(Context context, List<NoteInfo> data, OnNoteClickListener listener) {
         mContext = context;
         noteInfo = data;
+        noteClickListener = listener;
     }
 
     @Override
@@ -80,6 +86,13 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
                 // 长按时弹出对话框
                 showDeleteDialog(position);
                 return true;
+            }
+        });
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                noteClickListener.onNoteClick(position);
             }
         });
     }

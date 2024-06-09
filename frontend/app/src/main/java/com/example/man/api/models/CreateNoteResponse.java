@@ -3,9 +3,11 @@ package com.example.man.api.models;
 public class CreateNoteResponse {
     private String message;
     private int id;
+    private String time;
 
-    public CreateNoteResponse(int id, String message) {
+    public CreateNoteResponse(int id, String time, String message) {
         this.id = id;
+        this.time = time;
         this.message = message;
     }
 
@@ -17,6 +19,7 @@ public class CreateNoteResponse {
         return message;
     }
 
+    public String getTime() {return time;}
 
     public void setId(int id) {
         this.id = id;
@@ -25,4 +28,6 @@ public class CreateNoteResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    public void setTime(String time){ this.time = time;}
 }

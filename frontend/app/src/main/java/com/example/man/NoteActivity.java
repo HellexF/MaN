@@ -55,7 +55,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class NoteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, NoteCategoriesAdapter.OnItemSelectedListener {
+public class NoteActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, NoteCategoriesAdapter.OnItemSelectedListener,
+        NoteListAdapter.OnNoteClickListener
+{
     private String username = "";
     private String signature = "";
     private DrawerLayout drawerLayout;
@@ -220,7 +223,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
                 noteInfo.addAll(response.body().getNoteInfo());
-                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo);
+                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo, NoteActivity.this);
                 noteRecyclerView.setAdapter(noteListAdapter);
                 noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
             }
@@ -289,6 +292,17 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    public void onNoteClick(int position){
+        Intent intent = new Intent(NoteActivity.this, NoteContentActivity.class);
+        intent.putExtra("note_id", noteInfo.get(position).id);
+        intent.putExtra("category_id", categoryId);
+        intent.putExtra("last_modified", noteInfo.get(position).time);
+        intent.putExtra("title", noteInfo.get(position).title);
+        intent.putExtra("not_saved", false);
+        startActivity(intent);
+    }
+
+    @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
@@ -310,6 +324,10 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             public void onResponse(Call<CreateNoteResponse> call, Response<CreateNoteResponse> response) {
                 Intent intent = new Intent(NoteActivity.this, NoteContentActivity.class);
                 intent.putExtra("note_id", response.body().getId());
+                intent.putExtra("category_id", categoryId);
+                intent.putExtra("last_modified", response.body().getTime());
+                intent.putExtra("title", "未命名");
+                intent.putExtra("not_saved", true);
                 startActivity(intent);
             }
 

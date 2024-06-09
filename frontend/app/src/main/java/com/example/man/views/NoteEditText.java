@@ -59,6 +59,7 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
         setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
         setSingleLine(false);
         setMaxLines(Integer.MAX_VALUE);
+        switchToTextView();
 
         this.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
@@ -78,8 +79,7 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                switchToEditText();
-                requestFocus();
+                show();
             }
         });
     }
@@ -100,6 +100,11 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
             isTextViewVisible = false;
             this.requestFocus();
         }
+    }
+
+    public void show(){
+        switchToEditText();
+        requestFocus();
     }
 
     public void setListener(NoteContentAdapter.OnItemViewClickListener listener){
