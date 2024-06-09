@@ -59,6 +59,10 @@
             android:windowSoftInputMode="adjustPan"></activity>
         <activity android:name=".InfoActivity"></activity>
         <activity android:name=".NoteContentActivity"></activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>

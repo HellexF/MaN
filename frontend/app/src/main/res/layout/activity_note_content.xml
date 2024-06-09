@@ -1,53 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:id="@+id/container"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
     android:windowSoftInputMode="adjustResize">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/light_purple">
-
-        <ImageButton
-            android:id="@+id/back_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/return_icon"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="5dp"
+        android:src="@drawable/return_purple_icon"
+        android:background="?attr/selectableItemBackgroundBorderless"/>
 
     <EditText
         android:id="@+id/title_edit_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="输入笔记标题"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:paddingVertical="12dp"
-        android:background="@drawable/rounded_button"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@android:color/transparent"
         android:elevation="4dp"
+        android:hint="输入笔记标题"
         android:imeOptions="actionDone"
+        android:paddingVertical="12dp"
         android:singleLine="true"
-        android:paddingStart="10dp"
-        android:layout_margin="16dp"/>
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textCursorDrawable="@drawable/cursor_color" />
 
     <TextView
         android:id="@+id/title_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
+        android:textSize="30sp"
         android:textStyle="bold"
+        android:textColor="@color/black"
         android:paddingVertical="12dp"
         android:elevation="4dp"
         android:visibility="gone"
-        android:paddingLeft="10dp"
-        android:layout_margin="16dp"
-        />
+        android:layout_marginStart="16dp" />
 
     <TextView
         android:id="@+id/note_modified_time"
@@ -56,16 +53,55 @@ android:orientation="vertical"
         android:text="2023年6月1日 15:30"
         android:textSize="14sp"
         android:textColor="@color/gray"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="4dp" />
+        android:layout_marginStart="16dp" />
 
-    <View
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:background="@color/light_purple"
-        android:layout_marginVertical="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp" >
+
+        <View
+            android:id="@+id/dash_line_begin"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/dash_line"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/textView"/>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/great_vibes"
+            android:text="In memory of Kobe Bryant"
+            android:textColor="@color/light_yellow"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/dash_line_end"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/dash_line"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/textView"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/note_content_list"

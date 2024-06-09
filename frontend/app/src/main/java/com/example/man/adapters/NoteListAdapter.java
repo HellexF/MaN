@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,15 +35,23 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
     private static final int TYPE_LIST = 0;
     private static final int TYPE_GRID = 1;
     private OnNoteClickListener noteClickListener;
+    private NoteListViewHolder lastSelectedHolder;
+    private OnItemChangeCategoryListener listener;
 
     public interface OnNoteClickListener{
         void onNoteClick(int position);
     }
 
-    public NoteListAdapter(Context context, List<NoteInfo> data, OnNoteClickListener listener) {
+    public interface OnItemChangeCategoryListener {
+        void onItemChangeCategory(int position);
+    }
+
+    public NoteListAdapter(Context context, List<NoteInfo> data, OnNoteClickListener listener, OnItemChangeCategoryListener listener_) {
         mContext = context;
         noteInfo = data;
         noteClickListener = listener;
+        listener = listener_;
+        
     }
 
     @Override
@@ -68,7 +77,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
 
     @Override
     public void onBindViewHolder(@NonNull NoteListViewHolder holder, int position) {
-        NoteInfo item = noteInfo.get(position);
+        NoteInfo item = noteInfo.get(holder.getAdapterPosition());
         if (!Objects.equals(item.image, "")) {
             Glide.with(mContext)
                     .load(item.image)
@@ -83,16 +92,35 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                // 长按时弹出对话框
-                showDeleteDialog(position);
+                if (lastSelectedHolder != null && lastSelectedHolder != holder) {
+                    lastSelectedHolder.modifyNoteLayout.setVisibility(View.GONE);
+                }
+                holder.modifyNoteLayout.setVisibility(View.VISIBLE);
+                lastSelectedHolder = holder;
+                holder.deleteButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showDeleteDialog(holder.getAdapterPosition());
+                        holder.modifyNoteLayout.setVisibility(View.GONE);
+                    }
+                });
+                holder.modifyButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listener.onItemChangeCategory(holder.getAdapterPosition());
+                        holder.modifyNoteLayout.setVisibility(View.GONE);
+                    }
+                });
                 return true;
             }
         });
-
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 noteClickListener.onNoteClick(position);
+                if (holder.modifyNoteLayout.getVisibility() == View.VISIBLE) {
+                    holder.modifyNoteLayout.setVisibility(View.GONE);
+                }
             }
         });
     }
@@ -108,15 +136,20 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
         final AlertDialog dialog = builder.create();
 
         // 获取对话框布局中的视图
+        TextView hint = dialogView.findViewById(R.id.dialog_text);
         Button buttonOK = dialogView.findViewById(R.id.dialog_button_ok);
         Button buttonCancel = dialogView.findViewById(R.id.dialog_button_cancel);
+
+        // 设置提示文字
+        String hint_text = "删除“" + noteInfo.get(position).title + "”？";
+        hint.setText(hint_text);
 
         // 设置按钮点击事件
         buttonOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ApiService apiService = ApiClient.getClient().create(ApiService.class);
-                Call<DeleteNoteResponse> call = apiService.deleteNote(noteInfo.get(position).id);;
+                Call<DeleteNoteResponse> call = apiService.deleteNote(noteInfo.get(position).id);
                 call.enqueue(new Callback<DeleteNoteResponse>() {
                     @Override
                     public void onResponse(Call<DeleteNoteResponse> call, Response<DeleteNoteResponse> response) {
@@ -153,6 +186,9 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
         TextView note_title;
         TextView note_date;
         TextView note_emotion;
+        RelativeLayout modifyNoteLayout;
+        Button deleteButton;
+        Button modifyButton;
 
         public NoteListViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -160,6 +196,9 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
             note_title = itemView.findViewById(R.id.list_note_title);
             note_date = itemView.findViewById(R.id.list_note_date);
             note_emotion = itemView.findViewById(R.id.list_note_emotion);
+            modifyNoteLayout = itemView.findViewById(R.id.modify_note_layout);
+            deleteButton = itemView.findViewById(R.id.delete_button);
+            modifyButton = itemView.findViewById(R.id.modify_button);
         }
     }
 }

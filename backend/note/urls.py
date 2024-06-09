@@ -13,6 +13,11 @@ urlpatterns = [
         name="crate_note"
     ),
     path(
+        "change_category",
+        views.ChangeCategoryView.as_view(),
+        name="change_category"
+    ),
+    path(
         "delete_note/<int:note_id>/",
         views.DeleteNoteView.as_view(),
         name='delete_note'

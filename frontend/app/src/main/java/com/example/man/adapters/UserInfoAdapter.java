@@ -336,7 +336,6 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                             });
                         }
                         else {
-                            finalErrorTextView.setText("请输入密码，密码至少包含8位字符");
                             finalRecheckErrorTextView.setText("两次输入的密码不相同");
                             finalErrorTextView.setVisibility(isValidPassword ? View.GONE : View.VISIBLE);
                             finalRecheckErrorTextView.setVisibility(isSamePassword ? View.GONE : View.VISIBLE);
