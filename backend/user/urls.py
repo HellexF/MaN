@@ -60,4 +60,4 @@ urlpatterns = [
          views.UpdatePasswordView.as_view(),
          name='update_password'
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

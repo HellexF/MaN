@@ -58,4 +58,6 @@ dependencies {
     implementation("com.android.support:support-v4:28.0.0")
     implementation("com.android.support:recyclerview-v7:28.0.0")
     implementation("com.wajahatkarim3.BufferTextInputLayout:buffertextinputlayout:1.2.0")
+    implementation("com.github.rjsvieira:floatingMenu:1.3.0")
+    implementation("com.4ert:audioview:1.4.12")
 }

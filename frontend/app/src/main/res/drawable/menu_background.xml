@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 定义背景颜色 -->
+    <solid android:color="#FFFFFF"/>
+    <!-- 定义圆角 -->
+    <corners android:radius="8dp"/>
+    <!-- 定义内边距 -->
+    <padding
+        android:left="16dp"
+        android:top="16dp"
+        android:right="16dp"
+        android:bottom="16dp"/>
+    <!-- 定义阴影 -->
+    <shadow
+        android:color="#80000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:radius="4dp"/>
+</shape>

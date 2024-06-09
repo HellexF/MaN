@@ -127,4 +127,8 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
         }
         return super.onKeyPreIme(keyCode, event);
     }
+
+    public void setTextView(String text) {
+        this.textView.setText(text);
+    }
 }

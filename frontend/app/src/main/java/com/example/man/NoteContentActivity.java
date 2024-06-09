@@ -54,9 +54,13 @@ import android.widget.Toast;
 import android.Manifest;
 
 import com.example.man.adapters.NoteContentAdapter;
+import com.example.man.utils.CustomedAnimation;
 import com.example.man.views.NoteEditText;
 
-public class NoteContentActivity extends AppCompatActivity implements View.OnClickListener, NoteContentAdapter.OnItemViewClickListener{
+public class NoteContentActivity extends AppCompatActivity implements View.OnClickListener,
+        NoteContentAdapter.OnItemViewClickListener, NoteContentAdapter.OnItemDeleteListener,
+        NoteContentAdapter.OnItemReplaceListener, NoteContentAdapter.OnTextChangedListener
+{
     private View mContainer;
     private TextView mTitleTextView;
     private EditText mTitleEdit;
@@ -86,6 +90,11 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
     private long pausedTime = 0L;
     private long pauseStartTime = 0L;
     private Uri audioUri;
+    private NoteEditText editText;
+    private String textBeforeCursor = "";
+    private String textAfterCursor = "";
+    private int currentPos;
+    private boolean toReplaceItem = false;
     private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
     LinearLayoutManager mLayoutManager;
 
@@ -172,17 +181,13 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
             }
         });
 
-
-        // mEditText = findViewById(R.id.edit_view);
-        // mEditText.addTextChangedListener(this);
-
         // 键盘工具栏
         keyboardListener = new KeyboardOnGlobalChangeListener();
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
 
         noteContents = new ArrayList<NoteContent>();
         noteContents.add(new NoteContent(0, ""));
-        noteContentAdapter = new NoteContentAdapter(this, noteContents, this);
+        noteContentAdapter = new NoteContentAdapter(this, noteContents, this, this, this, this);
         mNoteContentList.setLayoutManager(new LinearLayoutManager(this));
         mNoteContentList.setAdapter(noteContentAdapter);
         mNoteContentList.setOnTouchListener(new View.OnTouchListener() {
@@ -193,6 +198,13 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
                     clearEditTextFocus(v);
                 }
                 return false;
+            }
+        });
+
+        noteContentAdapter.setOnItemClickListener(new NoteContentAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                currentPos = position;
             }
         });
         mLayoutManager = new LinearLayoutManager(this);
@@ -234,6 +246,14 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onClick(View v) {
         int id = v.getId();
+        int cursorPosition = editText.getSelectionStart();
+        String text = editText.getText().toString();
+
+        if(noteContentAdapter.getItemViewType(currentPos) == NoteContentAdapter.TEXT_TYPE){
+            textBeforeCursor = text.substring(0, cursorPosition);
+            textAfterCursor = text.substring(cursorPosition);
+        }
+
         if (id == R.id.photo_tool) {
             showPhotoOptions();
         } else if (id == R.id.voice_tool) {
@@ -243,7 +263,7 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onItemViewClick(View view) {
-        NoteEditText editText = (NoteEditText) view;
+        editText = (NoteEditText) view;
         editText.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -269,6 +289,36 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onItemDelete(int position) {
+        // 删除数据并通知适配器
+        noteContents.remove(position);
+        String text = noteContents.get(position - 1).getContent() + noteContents.get(position).getContent();
+        noteContents.get(position - 1).setContent(text);
+        noteContents.remove(position);
+        noteContentAdapter.notifyItemChanged(position - 1);
+        noteContentAdapter.notifyItemRangeRemoved(position, 2);
+    }
+
+    @Override
+    public void onItemReplace(int position){
+        // 根据类型决定是替换图片还是视频
+        int type = noteContentAdapter.getItemViewType(position);
+        currentPos = position;
+        toReplaceItem = true;
+        if(type == NoteContentAdapter.IMAGE_TYPE){
+            showPhotoOptions();
+        }
+        else if(type == NoteContentAdapter.AUDIO_TYPE){
+            showVoiceOptions();
+        }
+    }
+
+    @Override
+    public void onTextChanged(int position, String content){
+        noteContents.get(position).setContent(content);
     }
 
     private void showPhotoOptions() {
@@ -431,6 +481,8 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
         buttonChooseVoice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                dialog.dismiss();
                 chooseVoice();
             }
         });
@@ -577,8 +629,8 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
 
     private void startRecording(TextView recordingDuration) {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Audio.Media.DISPLAY_NAME, "my_audio.3gp");
-        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/3gpp");
+        values.put(MediaStore.Audio.Media.DISPLAY_NAME, "未命名_" + currentPos + "_audio.mp3");
+        values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
         values.put(MediaStore.Audio.Media.RELATIVE_PATH, "Music/Recordings");
 
         audioUri = getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values);
@@ -646,30 +698,56 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CODE_SELECT_PHOTO) {
                 Uri selectedImageUri = data.getData();
-                addImageContent(selectedImageUri);
+                handleContent(selectedImageUri, NoteContentAdapter.IMAGE_TYPE);
             } else if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
                 if (isAndroidQ) {
-                    // Android 10 使用图片uri加载
-                    // ivPhoto.setImageURI(mCameraUri);
+                    handleContent(mCameraUri, NoteContentAdapter.IMAGE_TYPE);
                 } else {
                     // 使用图片路径加载
-                    // ivPhoto.setImageBitmap(BitmapFactory.decodeFile(mCameraImagePath));
+                    handleContent(Uri.parse(mCameraImagePath), NoteContentAdapter.IMAGE_TYPE);
                 }
             } else if (requestCode == REQUEST_CODE_PICK_AUDIO) {
                 if (data != null) {
                     Uri audioUri = data.getData();
                     // playAudio(audioUri);
+                    handleContent(audioUri, NoteContentAdapter.AUDIO_TYPE);
                 }
             }
         }
     }
 
-    private void addImageContent(Uri imageUri) {
-        noteContents.add(new NoteContent(NoteContent.IMAGE_TYPE_CONTENT, imageUri.toString()));
-        noteContents.add(new NoteContent(NoteContent.TEXT_TYPE_CONTENT, ""));
+    private void handleContent(Uri uri, int type){
+        if(toReplaceItem){
+            toReplaceItem = false;
+            changeContent(currentPos, uri);
+        }
+        else {
+            addContent(uri, type);
+        }
+    }
 
-        noteContentAdapter.notifyItemInserted(noteContents.size() - 2);
-        noteContentAdapter.notifyItemInserted(noteContents.size() - 1);
+    private void changeContent(int position, Uri uri){
+        noteContents.get(position).setContent(uri.toString());
+        noteContentAdapter.notifyItemChanged(position);
+    }
+
+    private void addContent(Uri imageUri, int type) {
+        if(noteContentAdapter.getItemViewType(currentPos) == NoteContentAdapter.TEXT_TYPE){
+            noteContents.get(currentPos).setContent(textBeforeCursor);
+            noteContents.add(currentPos + 1, new NoteContent(type, imageUri.toString()));
+            noteContents.add(currentPos + 2, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, textAfterCursor));
+
+            noteContentAdapter.notifyItemChanged(currentPos);
+            noteContentAdapter.notifyItemInserted(currentPos + 1);
+
+        }
+        else
+        {
+            noteContents.add(currentPos + 1, new NoteContent(NoteContent.TEXT_TYPE_CONTENT, ""));
+            noteContents.add(currentPos + 2, new NoteContent(type, imageUri.toString()));
+
+            noteContentAdapter.notifyItemInserted(currentPos + 1);
+        }
     }
 
     private void showKeyboardTopPopupWindow(int x, int y) {
