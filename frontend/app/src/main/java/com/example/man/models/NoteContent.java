@@ -1,4 +1,4 @@
-package com.example.man;
+package com.example.man.models;
 
 public class NoteContent {
     public final static int TEXT_TYPE_CONTENT = 0;

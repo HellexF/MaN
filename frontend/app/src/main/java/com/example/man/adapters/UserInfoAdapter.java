@@ -75,7 +75,7 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
     private static final int SET_INFO_PHONE = 9;
 
     private int convertPosToType (int position) {
-        return position + 3 + (getItem(position).endsWith("未设置") ? 3 : 0);
+        return position + 3 + (getItem(position).endsWith("未设置") && position != 4 ? 3 : 0);
     }
     private int convertTypeToPos (int type) { return type > 7 ? type - 6 : type - 3;}
     public UserInfoAdapter(Context context, int resource, ArrayList<String> data) {
@@ -233,6 +233,14 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                 checkTextInput.setHint("请输入原密码");
                 editTextInput.setHint("请输入新密码");
                 recheckTextInput.setHint("请再次输入相同的新密码");
+                break;
+            case SET_INFO_EMAIL:
+                dialogTextView.setText("设置邮箱");
+                checkTextInput.setHint("请输入邮箱");
+                break;
+            case SET_INFO_PHONE:
+                dialogTextView.setText("设置手机号");
+                checkTextInput.setHint("请输入手机号");
                 break;
             case MODIFY_INFO_EMAIL:
                 dialogTextView.setText("修改邮箱");

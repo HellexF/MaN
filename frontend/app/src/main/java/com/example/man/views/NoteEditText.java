@@ -66,9 +66,7 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
                 InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 if (!hasFocus) {
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                    if (!getText().toString().isEmpty()){
-                        switchToTextView();
-                    }
+                    switchToTextView();
                 }
                 else {
                     mListener.onItemViewClick(NoteEditText.this);

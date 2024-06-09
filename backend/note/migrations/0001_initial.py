@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ("note_id", models.AutoField(primary_key=True, serialize=False)),
                 ("title", models.CharField(max_length=50)),
                 ("category", models.CharField(max_length=100)),
-                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("last_modified", models.DateTimeField(auto_now_add=True)),
                 (
                     "user",
                     models.ForeignKey(

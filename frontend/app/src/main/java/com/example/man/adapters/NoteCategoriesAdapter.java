@@ -92,8 +92,13 @@ public class NoteCategoriesAdapter extends RecyclerView.Adapter<NoteCategoriesAd
         });
     }
 
-    public boolean isItemExist(String text) {
-        return data.contains(text);
+    public int isItemExist(String text) {
+        for(int i = 0; i < data.size(); i++){
+            if(data.get(i).getName().equals(text)){
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean isDeletable(int position) {

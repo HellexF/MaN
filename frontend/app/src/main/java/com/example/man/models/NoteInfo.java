@@ -1,4 +1,4 @@
-package com.example.man;
+package com.example.man.models;
 
 public class NoteInfo {
     public int id;

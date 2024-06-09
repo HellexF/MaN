@@ -1,6 +1,6 @@
 package com.example.man.api.models;
 
-import com.example.man.NoteInfo;
+import com.example.man.models.NoteInfo;
 
 import java.util.List;
 

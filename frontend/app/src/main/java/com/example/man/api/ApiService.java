@@ -4,6 +4,7 @@ import com.example.man.api.models.CheckEmailAvailableResponse;
 import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
+import com.example.man.api.models.CreateNoteRequest;
 import com.example.man.api.models.DeleteCategoryResponse;
 import com.example.man.api.models.DeleteNoteResponse;
 import com.example.man.api.models.EmailRequest;
@@ -14,6 +15,7 @@ import com.example.man.api.models.GetNoteInfoRequest;
 import com.example.man.api.models.GetNoteInfoResponse;
 import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
+import com.example.man.api.models.CreateNoteResponse;
 import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.api.models.RegisterInfoRequest;
 import com.example.man.api.models.RegistrationResponse;
@@ -77,6 +79,8 @@ public interface ApiService {
     Call<DeleteCategoryResponse> deleteCategory(@Path("category_id") int Id);
     @PATCH("/note/get_note_info")
     Call<GetNoteInfoResponse> getNoteInfo(@Body GetNoteInfoRequest request);
+    @POST("/note/create_note")
+    Call<CreateNoteResponse> createNote(@Body CreateNoteRequest request);
     @DELETE("/note/delete_note/{note_id}/")
     Call<DeleteNoteResponse> deleteNote(@Path("note_id") int Id);
     @PATCH("/content/search_note")

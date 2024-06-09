@@ -32,11 +32,16 @@ import com.example.man.api.ApiService;
 import com.example.man.api.models.Category;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
+import com.example.man.api.models.CreateNoteRequest;
 import com.example.man.api.models.GetCategoriesResponse;
 import com.example.man.api.models.GetNoteInfoRequest;
 import com.example.man.api.models.GetNoteInfoResponse;
+import com.example.man.api.models.CreateNoteResponse;
 import com.example.man.api.models.SearchNoteRequest;
 import com.example.man.api.models.SearchNoteResponse;
+import com.example.man.callbacks.ItemTouchHelperCallback;
+import com.example.man.decorations.GridSpacingItemDecoration;
+import com.example.man.models.NoteInfo;
 import com.example.man.utils.SharedPreferencesManager;
 import com.google.android.material.navigation.NavigationView;
 import com.loopeer.itemtouchhelperextension.ItemTouchHelperExtension;
@@ -73,6 +78,9 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     private NoteListAdapter noteListAdapter;
     private List<Category> data = new ArrayList<>();
     private List<NoteInfo> noteInfo = new ArrayList<>();
+    private final int CREATE_CATEGORY = 0;
+    private final int SET_CATEGORY = 1;
+    private final int CHANGE_CATEGORY = 2;
     private ApiService apiService;
     GridSpacingItemDecoration itemDecoration = new GridSpacingItemDecoration(2, 50, false);
     @Override
@@ -186,7 +194,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                 addMenuButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        showInputDialog();
+                        showInputDialog(CREATE_CATEGORY);
                     }
                 });
 
@@ -228,8 +236,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         addNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(NoteActivity.this, NoteContentActivity.class);
-                startActivity(intent);
+                showInputDialog(SET_CATEGORY);
             }
         });
 
@@ -296,7 +303,24 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    private void showInputDialog() {
+    private void createNote(int categoryId){
+        Call<CreateNoteResponse> call = apiService.createNote(new CreateNoteRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this)), categoryId));
+        call.enqueue(new Callback<CreateNoteResponse>() {
+            @Override
+            public void onResponse(Call<CreateNoteResponse> call, Response<CreateNoteResponse> response) {
+                Intent intent = new Intent(NoteActivity.this, NoteContentActivity.class);
+                intent.putExtra("note_id", response.body().getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFailure(Call<CreateNoteResponse> call, Throwable t) {
+                Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showInputDialog(int type) {
         // 创建对话框的布局视图
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_input, null);
@@ -305,6 +329,14 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         final AlertDialog dialog = builder.create();
+
+        TextView titleTextView = dialogView.findViewById(R.id.dialog_text);
+        if(type == SET_CATEGORY){
+            titleTextView.setText("设置类别");
+        }
+        else if(type == CHANGE_CATEGORY){
+            titleTextView.setText("修改类别");
+        }
 
         // 获取对话框布局中的视图
         final EditText editTextInput = dialogView.findViewById(R.id.dialog_input);
@@ -317,13 +349,24 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             public void onClick(View v) {
                 String inputText = editTextInput.getText().toString();
                 TextView dialogErrorTextView = dialogView.findViewById(R.id.dialog_error);;
+                int index = adapter.isItemExist(inputText);
                 if (inputText.equals("")) {
                     dialogErrorTextView.setText("类别名不能为空");
                     dialogErrorTextView.setVisibility(TextView.VISIBLE);
                 }
-                else if (adapter.isItemExist(inputText)) {
-                    dialogErrorTextView.setText("类别已存在");
+                else if (inputText.equals("收集箱")){
+                    dialogErrorTextView.setText("不能使用此类名");
                     dialogErrorTextView.setVisibility(TextView.VISIBLE);
+                }
+                else if (index != -1) {
+                    if(type == CREATE_CATEGORY){
+                        dialogErrorTextView.setText("类别已存在");
+                        dialogErrorTextView.setVisibility(TextView.VISIBLE);
+                    }
+                    else if(type == SET_CATEGORY){
+                        // 创建笔记
+                        createNote(data.get(index).getId());
+                    }
                 }
                 else {
                     dialogErrorTextView.setVisibility(TextView.GONE);
@@ -336,9 +379,14 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                                 data.add(new Category(response.body().getId(), inputText));
                                 // 更新 RecyclerView
                                 adapter.notifyItemInserted(data.size() - 1);
-                                // 滚动到最后一个位置
-                                recyclerView.scrollToPosition(data.size() - 1);
-                                dialog.dismiss();
+                                if(type == CHANGE_CATEGORY){
+                                    // 滚动到最后一个位置
+                                    recyclerView.scrollToPosition(data.size() - 1);
+                                    dialog.dismiss();
+                                }
+                                else if(type == SET_CATEGORY){
+                                    createNote(data.get(data.size() - 1).getId());
+                                }
                             }
                         }
 

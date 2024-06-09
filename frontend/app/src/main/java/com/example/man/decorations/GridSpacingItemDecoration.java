@@ -1,4 +1,4 @@
-package com.example.man;
+package com.example.man.decorations;
 
 import android.graphics.Rect;
 import android.view.View;

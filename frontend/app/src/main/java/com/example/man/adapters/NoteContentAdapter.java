@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -27,11 +26,10 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.man.NoteContent;
+import com.example.man.models.NoteContent;
 import com.example.man.R;
 import com.example.man.utils.CustomedAnimation;
 import com.example.man.views.NoteEditText;
-import com.keenfin.audioview.AudioView;
 
 import java.io.IOException;
 import java.util.List;

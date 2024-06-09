@@ -2,12 +2,10 @@ package com.example.man.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,17 +14,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.man.NoteActivity;
-import com.example.man.NoteInfo;
+import com.example.man.models.NoteInfo;
 import com.example.man.R;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
-import com.example.man.api.models.Category;
-import com.example.man.api.models.CreateCategoryRequest;
-import com.example.man.api.models.CreateCategoryResponse;
-import com.example.man.api.models.DeleteCategoryResponse;
 import com.example.man.api.models.DeleteNoteResponse;
-import com.example.man.utils.SharedPreferencesManager;
 
 import java.util.List;
 import java.util.Objects;

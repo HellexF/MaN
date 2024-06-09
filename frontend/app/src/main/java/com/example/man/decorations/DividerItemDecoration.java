@@ -1,4 +1,4 @@
-package com.example.man;
+package com.example.man.decorations;
 
 import android.content.Context;
 import android.graphics.Canvas;
