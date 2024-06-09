@@ -60,4 +60,9 @@ urlpatterns = [
          views.UpdatePasswordView.as_view(),
          name='update_password'
     ),
+    path(
+        "get_emotion",
+        views.GetEmotionView.as_view(),
+        name='get_emotion'
+    ),
 ]

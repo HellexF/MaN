@@ -122,7 +122,7 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                         new LogoutAsyncTask(mContext).execute();
                     }
                 });
-            } else if (viewType == VIEW_TYPE_SPACE){
+            } else if (viewType == VIEW_TYPE_SPACE) {
                 return new View(parent.getContext());
             }
             else {

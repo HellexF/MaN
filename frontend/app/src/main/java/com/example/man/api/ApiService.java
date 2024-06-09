@@ -5,13 +5,20 @@ import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
 import com.example.man.api.models.DeleteCategoryResponse;
+import com.example.man.api.models.DeleteNoteResponse;
 import com.example.man.api.models.EmailRequest;
+import com.example.man.api.models.EmotionRequest;
+import com.example.man.api.models.EmotionResponse;
 import com.example.man.api.models.GetCategoriesResponse;
+import com.example.man.api.models.GetNoteInfoRequest;
+import com.example.man.api.models.GetNoteInfoResponse;
 import com.example.man.api.models.LoginInfoRequest;
 import com.example.man.api.models.LoginResponse;
 import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.api.models.RegisterInfoRequest;
 import com.example.man.api.models.RegistrationResponse;
+import com.example.man.api.models.SearchNoteRequest;
+import com.example.man.api.models.SearchNoteResponse;
 import com.example.man.api.models.UpdateEmailRequest;
 import com.example.man.api.models.UpdatePasswordRequest;
 import com.example.man.api.models.UpdatePhoneNumberRequest;
@@ -60,11 +67,18 @@ public interface ApiService {
     Call<UpdateUserInfoResponse> updatePhoneNumber(@Body UpdatePhoneNumberRequest request);
     @PATCH("/user/update_password")
     Call<UpdateUserInfoResponse> updatePassword(@Body UpdatePasswordRequest request);
+    @POST("/user/get_emotion")
+    Call<EmotionResponse> getEmotion(@Body EmotionRequest request);
     @GET("/category/get_categories/{user_id}/")
     Call<GetCategoriesResponse> getCategories(@Path("user_id") int Id);
     @POST("/category/create_category")
     Call<CreateCategoryResponse> createCategory(@Body CreateCategoryRequest createCategoryRequest);
     @DELETE("/category/delete_category/{category_id}/")
     Call<DeleteCategoryResponse> deleteCategory(@Path("category_id") int Id);
-
+    @PATCH("/note/get_note_info")
+    Call<GetNoteInfoResponse> getNoteInfo(@Body GetNoteInfoRequest request);
+    @DELETE("/note/delete_note/{note_id}/")
+    Call<DeleteNoteResponse> deleteNote(@Path("note_id") int Id);
+    @PATCH("/content/search_note")
+    Call<SearchNoteResponse> searchNote(@Body SearchNoteRequest request);
 }

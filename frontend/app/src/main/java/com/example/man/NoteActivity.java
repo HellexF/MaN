@@ -15,21 +15,28 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.man.adapters.NoteCategoriesAdapter;
+import com.example.man.adapters.NoteListAdapter;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
 import com.example.man.api.models.Category;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
 import com.example.man.api.models.GetCategoriesResponse;
+import com.example.man.api.models.GetNoteInfoRequest;
+import com.example.man.api.models.GetNoteInfoResponse;
+import com.example.man.api.models.SearchNoteRequest;
+import com.example.man.api.models.SearchNoteResponse;
 import com.example.man.utils.SharedPreferencesManager;
 import com.google.android.material.navigation.NavigationView;
 import com.loopeer.itemtouchhelperextension.ItemTouchHelperExtension;
@@ -38,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import at.markushi.ui.CircleButton;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -49,21 +57,36 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     private Button sidebarButton;
     private Button displayButton;
     private Button addMenuButton;
+    private SearchView searchView;
+    private CircleButton addNoteButton;
     private TextView categoryTextView;
     private int display;
     private String category;
+    private int categoryId;
     private NavigationView navigationView;
     private TextView usernameTextView;
     private TextView signatureTextView;
     private RecyclerView recyclerView;
+    private RecyclerView noteRecyclerView;
     private ImageView avatarImageView;
     private NoteCategoriesAdapter adapter;
+    private NoteListAdapter noteListAdapter;
     private List<Category> data = new ArrayList<>();
+    private List<NoteInfo> noteInfo = new ArrayList<>();
     private ApiService apiService;
+    GridSpacingItemDecoration itemDecoration = new GridSpacingItemDecoration(2, 50, false);
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
+
+        // 设置初始类别
+        data.add(new Category(-1, "收集箱"));
+        category = data.get(0).getName();
+        categoryId = data.get(0).getId();
+
+        // 设置笔记显示列表
+        noteRecyclerView = findViewById(R.id.note_recycler_view);
 
         apiService = ApiClient.getClient().create(ApiService.class);
         // 获取当前登录用户的用户名
@@ -78,7 +101,6 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             public void onResponse(Call<GetCategoriesResponse> call, Response<GetCategoriesResponse> response) {
                 display = 0;
                 data.addAll(response.body().getCategories());
-                category = data.get(0).getName();
                 // 设置侧边栏按钮的ICON
                 sidebarButton = findViewById(R.id.sidebar_button);
                 Drawable icon = getResources().getDrawable(R.drawable.sidebar_icon);
@@ -123,11 +145,19 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                             Drawable displayIcon = getResources().getDrawable(R.drawable.grid_icon);
                             displayIcon.setBounds(0, 0, 70, 70);
                             displayButton.setCompoundDrawables(displayIcon, null, null, null);
+                            noteRecyclerView.setLayoutManager(new GridLayoutManager(NoteActivity.this, 2));
+                            noteRecyclerView.addItemDecoration(itemDecoration);
+                            noteListAdapter.setGrid(true);
+                            noteListAdapter.notifyDataSetChanged();
                         } else if (display == 1) {
                             display = 0;
                             Drawable displayIcon = getResources().getDrawable(R.drawable.list_icon);
                             displayIcon.setBounds(0, 0, 70, 70);
                             displayButton.setCompoundDrawables(displayIcon, null, null, null);
+                            noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
+                            noteRecyclerView.removeItemDecoration(itemDecoration);
+                            noteListAdapter.setGrid(false);
+                            noteListAdapter.notifyDataSetChanged();
                         }
                     }
                 });
@@ -173,6 +203,80 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onFailure(Call<GetCategoriesResponse> call, Throwable t) {
                 Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // 获取笔记列表
+        Call<GetNoteInfoResponse> call_ = apiService.getNoteInfo(new GetNoteInfoRequest(Integer.parseInt(SharedPreferencesManager.getUserId(this)), categoryId));
+        call_.enqueue(new Callback<GetNoteInfoResponse>() {
+            @Override
+            public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
+                noteInfo.addAll(response.body().getNoteInfo());
+                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo);
+                noteRecyclerView.setAdapter(noteListAdapter);
+                noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
+            }
+
+            @Override
+            public void onFailure(Call<GetNoteInfoResponse> call, Throwable t) {
+                Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // 设置添加笔记按钮
+        addNoteButton = findViewById(R.id.add_note);
+        addNoteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NoteActivity.this, NoteContentActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // 设置笔记搜索
+        searchView = findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (Objects.equals(newText, "")) {
+                    // 获取笔记列表
+                    Call<GetNoteInfoResponse> call_ = apiService.getNoteInfo(new GetNoteInfoRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this)), categoryId));
+                    call_.enqueue(new Callback<GetNoteInfoResponse>() {
+                        @Override
+                        public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
+                            noteInfo.clear();
+                            noteInfo.addAll(response.body().getNoteInfo());
+                            noteListAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onFailure(Call<GetNoteInfoResponse> call, Throwable t) {
+                            Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    // 获取笔记列表
+                    Call<SearchNoteResponse> call = apiService.searchNote(new SearchNoteRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this)), categoryId, newText));
+                    call.enqueue(new Callback<SearchNoteResponse>() {
+                        @Override
+                        public void onResponse(Call<SearchNoteResponse> call, Response<SearchNoteResponse> response) {
+                            noteInfo.clear();
+                            noteInfo.addAll(response.body().getNoteInfo());
+                            noteListAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onFailure(Call<SearchNoteResponse> call, Throwable t) {
+                            Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                return true;
             }
         });
     }
@@ -228,7 +332,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                     call.enqueue(new Callback<CreateCategoryResponse>() {
                         @Override
                         public void onResponse(Call<CreateCategoryResponse> call, Response<CreateCategoryResponse> response) {
-                            if(response.isSuccessful()){
+                            if (response.isSuccessful()) {
                                 data.add(new Category(response.body().getId(), inputText));
                                 // 更新 RecyclerView
                                 adapter.notifyItemInserted(data.size() - 1);
@@ -258,8 +362,25 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onItemSelected(String text) {
-        category = text;
+    public void onItemSelected(Category item) {
+        category = item.getName();
+        categoryId = item.getId();
         categoryTextView.setText(category);
+        // 获取笔记列表
+        Call<GetNoteInfoResponse> call = apiService.getNoteInfo(new GetNoteInfoRequest(Integer.parseInt(SharedPreferencesManager.getUserId(this)), categoryId));
+        call.enqueue(new Callback<GetNoteInfoResponse>() {
+            @Override
+            public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
+                noteInfo.clear();
+                noteInfo.addAll(response.body().getNoteInfo());
+                noteListAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Call<GetNoteInfoResponse> call, Throwable t) {
+                Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+            }
+        });
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 }

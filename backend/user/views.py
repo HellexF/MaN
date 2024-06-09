@@ -1,5 +1,6 @@
 import json
 
+from openai import OpenAI
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -47,8 +48,6 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            category = Category(user=user, name="收集箱")
-            category.save()
             return Response({'message': 'User registered successfully', 'id': user.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -85,7 +84,6 @@ class UserInfoView(APIView):
 class UploadAvatarView(APIView):
     def post(self, request):
         user_id = request.data.get('id')
-        print(request.data)
         try:
             user = NoteUser.objects.get(id=user_id)
         except NoteUser.DoesNotExist:
@@ -137,7 +135,6 @@ class UpdateEmailView(APIView):
 
 class UpdatePhoneNumberView(APIView):
     def patch(self, request):
-        print(request.data)
         serializer = PhoneUpdateSerializer(data=request.data)
         if serializer.is_valid():
             try:
@@ -161,3 +158,22 @@ class UpdatePasswordView(APIView):
                 return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GetEmotionView(APIView):
+    def post(self, request):
+        try:
+            client = OpenAI(
+                api_key="sk-3pFwaXe1DVsYCSLVc2QX47CKDHQXrMTDzGySjjrV7HckpvaB",
+                base_url="https://api.moonshot.cn/v1",
+            )
+
+            completion = client.chat.completions.create(
+                model="moonshot-v1-8k",
+                messages=[
+                    {"role": "user", "content": f"用一个词概括以下整段文本的情绪：{request.data['prompt']}"}
+                ],
+                temperature=0.3,
+            )
+            return Response({'message': completion.choices[0].message.content}, status=status.HTTP_200_OK)
+        except:
+            return Response({'message': 'API Error'}, status=status.HTTP_400_BAD_REQUEST)

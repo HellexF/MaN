@@ -46,6 +46,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.app.AlertDialog;
@@ -54,13 +55,19 @@ import android.widget.Toast;
 import android.Manifest;
 
 import com.example.man.adapters.NoteContentAdapter;
-import com.example.man.utils.CustomedAnimation;
+import com.example.man.api.ApiClient;
+import com.example.man.api.ApiService;
+import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
+import com.example.man.api.models.EmotionRequest;
+import com.example.man.api.models.EmotionResponse;
+import com.example.man.api.models.PhoneNumberRequest;
 import com.example.man.views.NoteEditText;
 
-public class NoteContentActivity extends AppCompatActivity implements View.OnClickListener,
-        NoteContentAdapter.OnItemViewClickListener, NoteContentAdapter.OnItemDeleteListener,
-        NoteContentAdapter.OnItemReplaceListener, NoteContentAdapter.OnTextChangedListener
-{
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class NoteContentActivity extends AppCompatActivity implements View.OnClickListener, NoteContentAdapter.OnItemViewClickListener{
     private View mContainer;
     private TextView mTitleTextView;
     private EditText mTitleEdit;
@@ -71,6 +78,7 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
     private LinearLayout toolbarContainer;
     private Button photoTool;
     private Button voiceTool;
+    private ImageButton backButton;
     private PopupWindow keyboardToolBar;
     private boolean keyboardShowing = false;
     private static final int REQUEST_CODE_SELECT_PHOTO = 1;
@@ -97,6 +105,7 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
     private boolean toReplaceItem = false;
     private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
     LinearLayoutManager mLayoutManager;
+    ApiService apiService = ApiClient.getClient().create(ApiService.class);
 
 
     @Override
@@ -108,6 +117,38 @@ public class NoteContentActivity extends AppCompatActivity implements View.OnCli
         mTitleEdit = findViewById(R.id.title_edit_view);
         mTitleTextView = findViewById(R.id.title_text_view);
         mNoteContentList = findViewById(R.id.note_content_list);
+
+        // 设置返回按钮
+        backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 情绪追踪
+                // TODO：设置prompt为笔记内容
+                Call<EmotionResponse> call = apiService.getEmotion(new EmotionRequest(""));
+                call.enqueue(new Callback<EmotionResponse>() {
+                    @Override
+                    public void onResponse(Call<EmotionResponse> call, Response<EmotionResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            EmotionResponse emotionResponse = response.body();
+                            String emotion = emotionResponse.getEmotionMessage();
+                            // TODO：设置笔记的情绪tag
+                        } else {
+                            Toast.makeText(NoteContentActivity.this, "请求错误", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<EmotionResponse> call, Throwable t) {
+                        Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                    }
+                });
+                // 回到主界面
+                Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
+                startActivity(intent);
+            }
+        });
+
         // TODO 判断应该显示哪个
         mTitleEdit.setVisibility(View.VISIBLE);
         mTitleTextView.setVisibility(View.GONE);

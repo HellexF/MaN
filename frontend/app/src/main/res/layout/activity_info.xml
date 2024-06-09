@@ -19,13 +19,13 @@
             android:id="@+id/info_list_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:dividerHeight="24dp" />
+            android:dividerHeight="20dp" />
 
         <ImageButton
             android:id="@+id/info_return_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="10dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:background="@android:color/transparent"
             android:scaleType="fitCenter"
