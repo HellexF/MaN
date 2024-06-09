@@ -1,5 +1,7 @@
 package com.example.man.api;
 
+import com.example.man.api.models.ChangeCategoryRequest;
+import com.example.man.api.models.ChangeCategoryResponse;
 import com.example.man.api.models.CheckEmailAvailableResponse;
 import com.example.man.api.models.CheckPhoneNumberAvailableResponse;
 import com.example.man.api.models.CreateCategoryRequest;
@@ -81,6 +83,8 @@ public interface ApiService {
     Call<GetNoteInfoResponse> getNoteInfo(@Body GetNoteInfoRequest request);
     @POST("/note/create_note")
     Call<CreateNoteResponse> createNote(@Body CreateNoteRequest request);
+    @POST("/note/change_category")
+    Call<ChangeCategoryResponse> changeCategory(@Body ChangeCategoryRequest request);
     @DELETE("/note/delete_note/{note_id}/")
     Call<DeleteNoteResponse> deleteNote(@Path("note_id") int Id);
     @PATCH("/content/search_note")

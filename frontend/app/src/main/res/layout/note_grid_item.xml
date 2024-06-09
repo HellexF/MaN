@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white"
+    android:background="@drawable/note_list_item_background"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
@@ -18,8 +18,8 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginStart="20dp"
-        android:gravity="bottom"
-        android:textColor="@android:color/black"
+        android:gravity="center_vertical"
+        android:textColor="@color/light_purple"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,20 +36,66 @@
 
         <TextView
             android:id="@+id/list_note_date"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/light_yellow"
             android:textSize="12sp" />
 
         <TextView
             android:id="@+id/list_note_emotion"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/light_yellow"
             android:textSize="12sp" />
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/modify_note_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/note_list_item_modify_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_centerInParent="true">
+
+            <Button
+                android:id="@+id/delete_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="删除"
+                android:layout_marginBottom="10dp"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:background="@drawable/modify_content_button_background"
+                android:fontFamily="sans-serif-medium" />
+
+            <Button
+                android:id="@+id/modify_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="修改类别"
+                android:layout_marginTop="10dp"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:background="@drawable/modify_content_button_background"
+                android:fontFamily="sans-serif-medium" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

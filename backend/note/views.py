@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from category.models import Category
 from user.models import NoteUser
 from .models import Note
+from content.models import Content
 from rest_framework.response import Response
 from django.http import JsonResponse
 
@@ -31,7 +32,6 @@ class CreateNoteView(APIView):
         data = request.data
         try:
             # 获取请求中的数据
-            print(data)
             user_id = data['userId']
             category_id = data['categoryId']
 
@@ -65,7 +65,22 @@ class DeleteNoteView(APIView):
     def delete(self, request, note_id):
         try:
             note = Note.objects.get(note_id=note_id)
+            Content.objects.filter(note_id=note_id).delete()
             note.delete()
             return Response({'message': 'Successful'}, status=status.HTTP_200_OK)
         except Note.DoesNotExist:
             return Response({'message': 'Note not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class ChangeCategoryView(APIView):
+    def post(self, request):
+        data = request.data
+        try:
+            note_id = data['noteId']
+            new_category_name = data['newCategoryName']
+            note = Note.objects.get(note_id=note_id)
+            category = Category.objects.get(name=new_category_name)
+            note.category_id = category.id
+            note.save()
+            return Response({'message': 'Successful'}, status=status.HTTP_200_OK)
+        except :
+            return Response({'message': 'API Error'}, status=status.HTTP_400_BAD_REQUEST)

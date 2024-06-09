@@ -1,12 +1,15 @@
 package com.example.man;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,6 +19,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -30,6 +34,8 @@ import com.example.man.adapters.NoteListAdapter;
 import com.example.man.api.ApiClient;
 import com.example.man.api.ApiService;
 import com.example.man.api.models.Category;
+import com.example.man.api.models.ChangeCategoryRequest;
+import com.example.man.api.models.ChangeCategoryResponse;
 import com.example.man.api.models.CreateCategoryRequest;
 import com.example.man.api.models.CreateCategoryResponse;
 import com.example.man.api.models.CreateNoteRequest;
@@ -55,7 +61,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class NoteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, NoteCategoriesAdapter.OnItemSelectedListener {
+public class NoteActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, NoteCategoriesAdapter.OnItemSelectedListener, NoteListAdapter.OnItemChangeCategoryListener {
     private String username = "";
     private String signature = "";
     private DrawerLayout drawerLayout;
@@ -194,7 +200,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                 addMenuButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        showInputDialog(CREATE_CATEGORY);
+                        showInputDialog(CREATE_CATEGORY, -1);
                     }
                 });
 
@@ -220,7 +226,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
                 noteInfo.addAll(response.body().getNoteInfo());
-                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo);
+                noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo, NoteActivity.this);
                 noteRecyclerView.setAdapter(noteListAdapter);
                 noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
             }
@@ -236,12 +242,27 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         addNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showInputDialog(SET_CATEGORY);
+                if (categoryId == -1) {
+                    showInputDialog(SET_CATEGORY, -1);
+                } else {
+                    createNote(categoryId);
+                }
             }
         });
 
         // 设置笔记搜索
         searchView = findViewById(R.id.search_view);
+        searchView.setIconifiedByDefault(false);
+        searchView.setFocusable(true);
+        searchView.setFocusableInTouchMode(true);
+        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    hideKeyboard();
+                }
+            }
+        });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -286,6 +307,34 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                 return true;
             }
         });
+
+        // 点击屏幕空白地方，搜索框失焦
+        ConstraintLayout constraintLayout = findViewById(R.id.constraint_layout);
+        constraintLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard();
+                searchView.clearFocus();
+                return false;
+            }
+        });
+        // TODO:和点击item会不会有冲突？
+        noteRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard();
+                searchView.clearFocus();
+                return false;
+            }
+        });
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     @Override
@@ -320,7 +369,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private void showInputDialog(int type) {
+    private void showInputDialog(int type, int position) {
         // 创建对话框的布局视图
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_input, null);
@@ -358,6 +407,10 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                     dialogErrorTextView.setText("不能使用此类名");
                     dialogErrorTextView.setVisibility(TextView.VISIBLE);
                 }
+                else if (inputText.equals(category)){
+                    dialogErrorTextView.setText("笔记已经位于当前类内");
+                    dialogErrorTextView.setVisibility(TextView.VISIBLE);
+                }
                 else if (index != -1) {
                     if(type == CREATE_CATEGORY){
                         dialogErrorTextView.setText("类别已存在");
@@ -366,6 +419,37 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                     else if(type == SET_CATEGORY){
                         // 创建笔记
                         createNote(data.get(index).getId());
+                    }
+                    else if (type == CHANGE_CATEGORY) {
+                        Call<ChangeCategoryResponse> call = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText));
+                        call.enqueue(new Callback<ChangeCategoryResponse>() {
+                            @Override
+                            public void onResponse(Call<ChangeCategoryResponse> call, Response<ChangeCategoryResponse> response) {
+                                if (response.isSuccessful()) {
+                                    // 获取笔记列表
+                                    Call<GetNoteInfoResponse> call_ = apiService.getNoteInfo(new GetNoteInfoRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this)), categoryId));
+                                    call_.enqueue(new Callback<GetNoteInfoResponse>() {
+                                        @Override
+                                        public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
+                                            noteInfo.clear();
+                                            noteInfo.addAll(response.body().getNoteInfo());
+                                            noteListAdapter.notifyDataSetChanged();
+                                            dialog.dismiss();
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<GetNoteInfoResponse> call, Throwable t) {
+                                            Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ChangeCategoryResponse> call, Throwable t) {
+                                Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
                 }
                 else {
@@ -380,12 +464,41 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                                 // 更新 RecyclerView
                                 adapter.notifyItemInserted(data.size() - 1);
                                 if(type == CHANGE_CATEGORY){
+                                    Call<ChangeCategoryResponse> call1 = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText));
+                                    call1.enqueue(new Callback<ChangeCategoryResponse>() {
+                                        @Override
+                                        public void onResponse(Call<ChangeCategoryResponse> call, Response<ChangeCategoryResponse> response) {
+                                            if (response.isSuccessful()) {
+                                                // 获取笔记列表
+                                                Call<GetNoteInfoResponse> call_ = apiService.getNoteInfo(new GetNoteInfoRequest(Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this)), categoryId));
+                                                call_.enqueue(new Callback<GetNoteInfoResponse>() {
+                                                    @Override
+                                                    public void onResponse(Call<GetNoteInfoResponse> call, Response<GetNoteInfoResponse> response) {
+                                                        noteInfo.clear();
+                                                        noteInfo.addAll(response.body().getNoteInfo());
+                                                        noteListAdapter.notifyDataSetChanged();
+                                                        dialog.dismiss();
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<GetNoteInfoResponse> call, Throwable t) {
+                                                        Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<ChangeCategoryResponse> call, Throwable t) {
+                                            Toast.makeText(NoteActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                        }
+                                    });
                                     // 滚动到最后一个位置
                                     recyclerView.scrollToPosition(data.size() - 1);
-                                    dialog.dismiss();
                                 }
                                 else if(type == SET_CATEGORY){
                                     createNote(data.get(data.size() - 1).getId());
+                                    dialog.dismiss();
                                 }
                             }
                         }
@@ -396,6 +509,7 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
                         }
                     });
                 }
+                searchView.clearFocus();
             }
         });
         buttonCancel.setOnClickListener(new View.OnClickListener() {
@@ -430,5 +544,10 @@ public class NoteActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    @Override
+    public void onItemChangeCategory(int position) {
+        showInputDialog(CHANGE_CATEGORY, position);
     }
 }
