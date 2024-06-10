@@ -109,7 +109,8 @@ class UploadView(APIView):
             file_path = os.path.join(directory_path, random_filename + '.mp3')
             content = content + f'/media/audios/note_audios/{id}/{random_filename}.mp3'
 
-        os.makedirs(directory_path)
+        if not os.path.exists(directory_path):
+            os.makedirs(directory_path)
 
         with open(file_path, 'wb') as f:
             f.write(file)

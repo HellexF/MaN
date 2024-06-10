@@ -1,9 +1,13 @@
+import pytz
+import os
+import shutil
+
 from django.utils import timezone
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
-import pytz
 
+from MaN import settings
 from category.models import Category
 from user.models import NoteUser
 from .models import Note
@@ -83,6 +87,13 @@ class DeleteNoteView(APIView):
         try:
             note = Note.objects.get(note_id=note_id)
             Content.objects.filter(note_id=note_id).delete()
+            # 删除对应的文件夹
+            image_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{note_id}')
+            if os.path.isdir(image_path):
+                shutil.rmtree(image_path)
+            audio_path = os.path.join(settings.MEDIA_ROOT, 'audios', 'note_audios', f'{note_id}')
+            if os.path.isdir(audio_path):
+                shutil.rmtree(audio_path)
             note.delete()
             return Response({'message': 'Successful'}, status=status.HTTP_200_OK)
         except Note.DoesNotExist:
