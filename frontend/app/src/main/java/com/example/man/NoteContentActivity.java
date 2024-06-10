@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -125,6 +126,7 @@ public class NoteContentActivity extends AppCompatActivity
     private boolean toReplaceItem = false;
     private boolean editFocused = false;
     private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
+    private ProgressDialog progressDialog;
     LinearLayoutManager mLayoutManager;
     ApiService apiService = ApiClient.getClient().create(ApiService.class);
 
@@ -930,6 +932,12 @@ public class NoteContentActivity extends AppCompatActivity
         mTitleEdit.clearFocus();
         String title = mTitleTextView.getText().toString();
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("保存中...");
+        progressDialog.setCancelable(false);
+
+        progressDialog.show();
+
         // 更新标题
         Call<MessageResponse> updateTitleCall = apiService.updateNoteTitle(note_id, new UpdateNoteTitleRequest(title.isEmpty() ? "未命名" : title));
         updateTitleCall.enqueue(new Callback<MessageResponse>() {
@@ -1019,12 +1027,14 @@ public class NoteContentActivity extends AppCompatActivity
                                                                             // 回到主界面
                                                                             Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
                                                                             intent.putExtra("category_id", category_id);
+                                                                            progressDialog.dismiss();
                                                                             startActivity(intent);
                                                                         }
                                                                     }
                                                                     @Override
                                                                     public void onFailure(Call<MessageResponse> call, Throwable t) {
                                                                         Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                                        progressDialog.dismiss();
                                                                     }
                                                                 });
                                                             }
@@ -1034,11 +1044,13 @@ public class NoteContentActivity extends AppCompatActivity
                                                                 intent.putExtra("category_id", category_id);
                                                                 startActivity(intent);
                                                                 Toast.makeText(NoteContentActivity.this, "KIMI大模型返回错误", Toast.LENGTH_LONG).show();
+                                                                progressDialog.dismiss();
                                                             }
                                                         }
                                                         @Override
                                                         public void onFailure(Call<EmotionResponse> call, Throwable t) {
                                                             Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                            progressDialog.dismiss();
                                                         }
                                                     });
 
@@ -1048,6 +1060,7 @@ public class NoteContentActivity extends AppCompatActivity
                                             @Override
                                             public void onFailure(Call<MessageResponse> call, Throwable t) {
                                                 Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                progressDialog.dismiss();
                                             }
                                         });
 
@@ -1061,6 +1074,7 @@ public class NoteContentActivity extends AppCompatActivity
                         @Override
                         public void onFailure(Call<MessageResponse> call, Throwable t) {
                             Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                            progressDialog.dismiss();
                         }
                     });
 
@@ -1070,6 +1084,7 @@ public class NoteContentActivity extends AppCompatActivity
             @Override
             public void onFailure(Call<MessageResponse> call, Throwable t) {
                 Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                progressDialog.dismiss();
             }
         });
     }
