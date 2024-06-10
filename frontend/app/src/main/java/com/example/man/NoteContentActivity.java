@@ -945,14 +945,21 @@ public class NoteContentActivity extends AppCompatActivity
                                 // 上传所有图片和音频
                                 int count = 0;
                                 for (NoteContent content: noteContents){
-                                    count += content.getType() != NoteContent.TEXT_TYPE_CONTENT ? 1 : 0;
+                                    if(content.getType() == 0){
+                                        count += 0;
+                                    }
+                                    else if(content.getContent().startsWith("http")){
+                                        count += 0;
+                                    }
+                                    else {
+                                        count += 1;
+                                    }
                                 }
-
 
                                 final CountDownLatch latch = new CountDownLatch(count);
 
                                 for (NoteContent content : noteContents) {
-                                    if (content.getType() != 0) {
+                                    if (content.getType() != 0 && !content.getContent().startsWith("http")) {
                                         // 处理图片或音频文件
                                         Uri fileUri = Uri.parse(content.getContent());
                                         byte[] fileBytes = new byte[0];

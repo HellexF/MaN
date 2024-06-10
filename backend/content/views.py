@@ -86,14 +86,6 @@ class DeleteNoteContentsView(APIView):
             # 删除对应的所有 Content 项
             Content.objects.filter(note=note).delete()
 
-            # 删除对应的文件夹
-            image_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{id}')
-            if os.path.exists(image_path):
-                shutil.rmtree(image_path)
-            audio_path = os.path.join(settings.MEDIA_ROOT, 'audios', 'note_audios', f'{id}')
-            if os.path.exists(audio_path):
-                shutil.rmtree(audio_path)
-
             return Response({"message": "Contents deleted successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
