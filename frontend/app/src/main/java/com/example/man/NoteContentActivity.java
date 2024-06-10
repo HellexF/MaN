@@ -1043,7 +1043,7 @@ public class NoteContentActivity extends AppCompatActivity
                                                                 Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
                                                                 intent.putExtra("category_id", category_id);
                                                                 startActivity(intent);
-                                                                Toast.makeText(NoteContentActivity.this, "KIMI大模型返回错误", Toast.LENGTH_LONG).show();
+                                                                Toast.makeText(NoteContentActivity.this, "Kimi大模型返回错误", Toast.LENGTH_LONG).show();
                                                                 progressDialog.dismiss();
                                                             }
                                                         }

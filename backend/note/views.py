@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
+import pytz
 
 from category.models import Category
 from user.models import NoteUser
@@ -26,13 +27,13 @@ class GetNoteInfoView(APIView):
                 contents = Content.objects.filter(note_id=note.note_id, type=1)
                 if len(contents) > 0:
                     response_data.append({'id': note.note_id, 'title': note.title,
-                                          'date': note.last_modified.strftime("%Y-%m-%d"),
-                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'date': note.last_modified.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.astimezone(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M'),
                                           'emotion': note.emotion, 'image': contents[0].content})
                 else:
                     response_data.append({'id': note.note_id, 'title': note.title,
-                                          'date': note.last_modified.strftime("%Y-%m-%d"),
-                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'date': note.last_modified.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.astimezone(pytz.timezone('Asia/Shanghai')).strftime('%Y-%m-%d %H:%M'),
                                           'emotion': note.emotion, 'image': note.image_url})
 
             return JsonResponse({'noteInfo': response_data})
@@ -51,19 +52,21 @@ class CreateNoteView(APIView):
             user = NoteUser.objects.get(id=user_id)
             category = Category.objects.get(id=category_id)
 
+            temp = timezone.now().astimezone(pytz.timezone('Asia/Shanghai'))
+
             note = Note.objects.create(
                 user=user,
                 title='未命名',
                 category=category,
                 emotion='',
                 image_url='',
-                last_modified=timezone.now()
+                last_modified=temp
             )
 
             # 准备响应数据
             response_data = {
                 'id': note.note_id,
-                'time': timezone.now().strftime('%Y-%m-%d %H:%M')
+                'time': temp.strftime('%Y-%m-%d %H:%M')
             }
 
             return Response(response_data, status=status.HTTP_201_CREATED)
@@ -100,7 +103,8 @@ class UpdateNoteEmotionView(APIView):
         try:
             note = Note.objects.get(note_id=note_id)
             note.emotion = request.data.get('emotion', note.emotion)
-            note.last_modified = timezone.now()
+            temp = timezone.now().astimezone(pytz.timezone('Asia/Shanghai'))
+            note.last_modified = temp
             note.save()
             return Response({'message': 'Successful'}, status=status.HTTP_200_OK)
         except Note.DoesNotExist:

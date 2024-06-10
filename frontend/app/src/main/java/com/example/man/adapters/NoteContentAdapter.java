@@ -322,6 +322,14 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             deleteAudioButton = itemView.findViewById(R.id.delete_audio_button);
             replaceAudioButton = itemView.findViewById(R.id.replace_audio_button);
 
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    playPauseButton.setImageResource(R.drawable.play_button);
+                    seekBar.setProgress(0);
+                }
+            });
+
             itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -375,9 +383,6 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser) {
                         mediaPlayer.seekTo(progress);
-                        if (progress == seekBar.getMax()) {
-                            playPauseButton.setImageResource(R.drawable.play_button);
-                        }
                     }
                 }
 
