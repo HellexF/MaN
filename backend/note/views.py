@@ -21,7 +21,20 @@ class GetNoteInfoView(APIView):
             else:
                 notes = Note.objects.filter(user_id=userId)
 
-            response_data = [{'id': note.note_id, 'title': note.title, 'date': note.last_modified.strftime("%Y-%m-%d"), 'time': note.last_modified.strftime('%Y-%m-%d %H:%M'), 'emotion': note.emotion, 'image': note.image_url} for note in notes]
+            response_data = []
+            for note in notes:
+                contents = Content.objects.filter(note_id=note.note_id, type=1)
+                if len(contents) > 0:
+                    response_data.append({'id': note.note_id, 'title': note.title,
+                                          'date': note.last_modified.strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'emotion': note.emotion, 'image': contents[0].content})
+                else:
+                    response_data.append({'id': note.note_id, 'title': note.title,
+                                          'date': note.last_modified.strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'emotion': note.emotion, 'image': note.image_url})
+
             return JsonResponse({'noteInfo': response_data})
         except:
             return Response({'message': 'API Error'}, status=status.HTTP_400_BAD_REQUEST)
@@ -86,7 +99,7 @@ class UpdateNoteEmotionView(APIView):
     def put(self, request, note_id):
         try:
             note = Note.objects.get(note_id=note_id)
-            note.title = request.data.get('title', note.title)
+            note.emotion = request.data.get('emotion', note.emotion)
             note.last_modified = timezone.now()
             note.save()
             return Response({'message': 'Successful'}, status=status.HTTP_200_OK)

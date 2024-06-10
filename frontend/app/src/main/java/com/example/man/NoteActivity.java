@@ -97,10 +97,11 @@ public class NoteActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
 
+        Intent intent = getIntent();
+        categoryId = intent.getIntExtra("category_id", -1);
+
         // 设置初始类别
         data.add(new Category(-1, "收集箱"));
-        category = data.get(0).getName();
-        categoryId = data.get(0).getId();
 
         // 设置笔记显示列表
         noteRecyclerView = findViewById(R.id.note_recycler_view);
@@ -136,6 +137,7 @@ public class NoteActivity extends AppCompatActivity
                     @Override
                     public void onClick(View v) {
                         drawerLayout.openDrawer(GravityCompat.START);
+                        searchView.clearFocus();
                     }
                 });
 
@@ -176,12 +178,9 @@ public class NoteActivity extends AppCompatActivity
                             noteListAdapter.setGrid(false);
                             noteListAdapter.notifyDataSetChanged();
                         }
+                        searchView.clearFocus();
                     }
                 });
-
-                // 设置当前笔记类别
-                categoryTextView = findViewById(R.id.category_text);
-                categoryTextView.setText(category);
 
                 // 设置侧边栏底部添加分类菜单按钮的ICON
                 addMenuButton = findViewById(R.id.add_menu_button);
@@ -196,6 +195,19 @@ public class NoteActivity extends AppCompatActivity
                 adapter.setContext(NoteActivity.this);
                 adapter.setOnItemSelectedListener(NoteActivity.this);
                 recyclerView.setAdapter(adapter);
+
+                for (int i = 0; i < data.size(); i++) {
+                    if (data.get(i).getId() == categoryId) {
+                        category = data.get(i).getName();
+                        adapter.setSelectedItem(i);
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+
+                // 设置当前笔记类别
+                categoryTextView = findViewById(R.id.category_text);
+                categoryTextView.setText(category);
+
                 // 设置滑动菜单项删除
                 ItemTouchHelperCallback mCallback = new ItemTouchHelperCallback(adapter);
                 ItemTouchHelperExtension mItemTouchHelper = new ItemTouchHelperExtension(mCallback);

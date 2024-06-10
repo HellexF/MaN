@@ -162,7 +162,6 @@ class UpdatePasswordView(APIView):
 class GetEmotionView(APIView):
     def post(self, request):
         try:
-            print(request.data)
             client = OpenAI(
                 api_key="sk-3pFwaXe1DVsYCSLVc2QX47CKDHQXrMTDzGySjjrV7HckpvaB",
                 base_url="https://api.moonshot.cn/v1",
@@ -171,10 +170,13 @@ class GetEmotionView(APIView):
             completion = client.chat.completions.create(
                 model="moonshot-v1-8k",
                 messages=[
-                    {"role": "user", "content": f"用一个词概括以下整段文本的情绪：{request.data['prompt']}"}
+                    {"role": "user", "content": f"用一个词概括以下整段文本的情感：{request.data['prompt']}，你的回答只能包含一个表达情感的词语，不超过四个字"}
                 ],
                 temperature=0.3,
             )
-            return Response({'message': completion.choices[0].message.content}, status=status.HTTP_200_OK)
+            result = completion.choices[0].message.content
+            if len(result) > 5:
+                result = "无"
+            return Response({'message': result}, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'API Error'}, status=status.HTTP_400_BAD_REQUEST)
