@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.PagerAdapter;
 
 import com.bumptech.glide.Glide;
 import com.example.man.models.NoteInfo;
@@ -94,8 +95,16 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
             public boolean onLongClick(View v) {
                 if (lastSelectedHolder != null && lastSelectedHolder != holder) {
                     lastSelectedHolder.modifyNoteLayout.setVisibility(View.GONE);
+                    holder.modifyNoteLayout.setVisibility(View.VISIBLE);
+                } else if (lastSelectedHolder == holder) {
+                    if (holder.modifyNoteLayout.getVisibility() == View.VISIBLE) {
+                        holder.modifyNoteLayout.setVisibility(View.GONE);
+                    } else if (holder.modifyNoteLayout.getVisibility() == View.GONE) {
+                        holder.modifyNoteLayout.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    holder.modifyNoteLayout.setVisibility(View.VISIBLE);
                 }
-                holder.modifyNoteLayout.setVisibility(View.VISIBLE);
                 lastSelectedHolder = holder;
                 holder.deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -118,9 +127,6 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.NoteLi
             @Override
             public void onClick(View v) {
                 noteClickListener.onNoteClick(position);
-                if (holder.modifyNoteLayout.getVisibility() == View.VISIBLE) {
-                    holder.modifyNoteLayout.setVisibility(View.GONE);
-                }
             }
         });
     }

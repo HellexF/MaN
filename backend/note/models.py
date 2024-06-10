@@ -9,7 +9,7 @@ class Note(models.Model):
     title = models.CharField(max_length=50, default="")
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     last_modified = models.DateTimeField(auto_now_add=True)
-    emotion = models.CharField(max_length=20, default="")
+    emotion = models.CharField(max_length=20, default="无")
     image_url = models.URLField(default="")
 
     def __str__(self):

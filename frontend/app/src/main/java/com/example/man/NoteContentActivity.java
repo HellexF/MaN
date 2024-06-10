@@ -220,6 +220,7 @@ public class NoteContentActivity extends AppCompatActivity
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
+                    hideKeyboard();
                     getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
 
 
@@ -945,14 +946,21 @@ public class NoteContentActivity extends AppCompatActivity
                                 // 上传所有图片和音频
                                 int count = 0;
                                 for (NoteContent content: noteContents){
-                                    count += content.getType() != NoteContent.TEXT_TYPE_CONTENT ? 1 : 0;
+                                    if(content.getType() == 0){
+                                        count += 0;
+                                    }
+                                    else if(content.getContent().startsWith("http")){
+                                        count += 0;
+                                    }
+                                    else {
+                                        count += 1;
+                                    }
                                 }
-
 
                                 final CountDownLatch latch = new CountDownLatch(count);
 
                                 for (NoteContent content : noteContents) {
-                                    if (content.getType() != 0) {
+                                    if (content.getType() != 0 && !content.getContent().startsWith("http")) {
                                         // 处理图片或音频文件
                                         Uri fileUri = Uri.parse(content.getContent());
                                         byte[] fileBytes = new byte[0];
@@ -994,38 +1002,46 @@ public class NoteContentActivity extends AppCompatActivity
                                                         }
                                                     }
 
-                                                    if(prompt.length() > 0){
-                                                        Call<EmotionResponse> emotionCall = apiService.getEmotion(new EmotionRequest(prompt.toString()));
-                                                        String finalPrompt = prompt.toString();
-                                                        emotionCall.enqueue(new Callback<EmotionResponse>() {
-                                                            @Override
-                                                            public void onResponse(Call<EmotionResponse> call, Response<EmotionResponse> response) {
-                                                                if (response.isSuccessful() && response.body() != null) {
-                                                                    EmotionResponse emotionResponse = response.body();
-                                                                    String emotion = emotionResponse.getEmotionMessage();
-                                                                    Call<MessageResponse> updateEmotionCall = apiService.updateNoteEmotion(note_id, new UpdateNoteEmotionRequest(finalPrompt.isEmpty() ? "无": emotion));
-                                                                    updateEmotionCall.enqueue(new Callback<MessageResponse>() {
-                                                                        @Override
-                                                                        public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+
+                                                    Call<EmotionResponse> emotionCall = apiService.getEmotion(new EmotionRequest(prompt.toString()));
+                                                    String finalPrompt = prompt.toString();
+                                                    emotionCall.enqueue(new Callback<EmotionResponse>() {
+                                                        @Override
+                                                        public void onResponse(Call<EmotionResponse> call, Response<EmotionResponse> response) {
+                                                            if (response.isSuccessful() && response.body() != null) {
+                                                                EmotionResponse emotionResponse = response.body();
+                                                                String emotion = emotionResponse.getEmotionMessage();
+                                                                Call<MessageResponse> updateEmotionCall = apiService.updateNoteEmotion(note_id, new UpdateNoteEmotionRequest(finalPrompt.isEmpty() ? "无": emotion));
+                                                                updateEmotionCall.enqueue(new Callback<MessageResponse>() {
+                                                                    @Override
+                                                                    public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                                                                        if (response.isSuccessful()) {
                                                                             // 回到主界面
                                                                             Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
+                                                                            intent.putExtra("category_id", category_id);
                                                                             startActivity(intent);
                                                                         }
-
-                                                                        @Override
-                                                                        public void onFailure(Call<MessageResponse> call, Throwable t) {
-                                                                            Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
-                                                                        }
-                                                                    });
-                                                                }
+                                                                    }
+                                                                    @Override
+                                                                    public void onFailure(Call<MessageResponse> call, Throwable t) {
+                                                                        Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                                    }
+                                                                });
                                                             }
-
-                                                            @Override
-                                                            public void onFailure(Call<EmotionResponse> call, Throwable t) {
-                                                                Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                            else {
+                                                                // 回到主界面
+                                                                Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
+                                                                intent.putExtra("category_id", category_id);
+                                                                startActivity(intent);
+                                                                Toast.makeText(NoteContentActivity.this, "KIMI大模型返回错误", Toast.LENGTH_LONG).show();
                                                             }
-                                                        });
-                                                    }
+                                                        }
+                                                        @Override
+                                                        public void onFailure(Call<EmotionResponse> call, Throwable t) {
+                                                            Toast.makeText(NoteContentActivity.this, "网络连接错误", Toast.LENGTH_LONG).show();
+                                                        }
+                                                    });
+
                                                 }
                                             }
 

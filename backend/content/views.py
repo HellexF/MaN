@@ -25,27 +25,32 @@ class SearchNoteView(APIView):
             key = data['key']
             if categoryId != -1:
                 contents = Content.objects.filter(user_id=userId, category_id=categoryId, content__icontains=key)
+                titles = Note.objects.filter(user_id=userId, category_id=categoryId, title__icontains=key)
             else:
                 contents = Content.objects.filter(user_id=userId, content__icontains=key)
+                titles = Note.objects.filter(user_id=userId, title__icontains=key)
 
             content_note_ids = contents.values_list('note_id', flat=True).distinct()
-
-            # 获取符合 title 条件的 note_id
-            title_note_ids = Note.objects.filter(user_id=userId, title__icontains=key).values_list('note_id',
-                                                                                                   flat=True).distinct()
+            title_note_ids = titles.values_list('note_id', flat=True).distinct()
 
             # 合并两个查询的结果
             note_ids = list(set(content_note_ids) | set(title_note_ids))
             response_data = []
             for note_id in note_ids:
                 note = Note.objects.get(note_id=note_id)
-                response_data.append({
-                    'id': note.user,
-                    'title': note.title,
-                    'date': note.last_modified.strftime('%Y-%m-%d'),
-                    'emotion': note.emotion,
-                    'image': note.image_url
-                })
+                contents = Content.objects.filter(note_id=note.note_id, type=1)
+                if len(contents) > 0:
+                    response_data.append({'id': note.note_id, 'title': note.title,
+                                          'date': note.last_modified.strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'emotion': note.emotion, 'image': contents[0].content})
+                    print(contents[0].content)
+                else:
+                    response_data.append({'id': note.note_id, 'title': note.title,
+                                          'date': note.last_modified.strftime("%Y-%m-%d"),
+                                          'time': note.last_modified.strftime('%Y-%m-%d %H:%M'),
+                                          'emotion': note.emotion, 'image': note.image_url})
+
             return JsonResponse({'noteInfo': response_data})
         except:
             return Response({'message': 'API Error'}, status=status.HTTP_400_BAD_REQUEST)
@@ -81,14 +86,6 @@ class DeleteNoteContentsView(APIView):
             # 删除对应的所有 Content 项
             Content.objects.filter(note=note).delete()
 
-            # 删除对应的文件夹
-            image_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{id}')
-            if os.path.exists(image_path):
-                shutil.rmtree(image_path)
-            audio_path = os.path.join(settings.MEDIA_ROOT, 'audios', 'note_audios', f'{id}')
-            if os.path.exists(audio_path):
-                shutil.rmtree(audio_path)
-
             return Response({"message": "Contents deleted successfully."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -101,7 +98,7 @@ class UploadView(APIView):
         random_filename = str(uuid.uuid4())
         directory_path = ""
         file_path = ""
-        content = "http://10.0.0.2:8000/media"
+        content = "http://10.0.2.2:8000"
 
         if type == 1:
             directory_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{id}')
