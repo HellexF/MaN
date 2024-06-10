@@ -129,6 +129,7 @@ public class NoteContentActivity extends AppCompatActivity
     private ProgressDialog progressDialog;
     LinearLayoutManager mLayoutManager;
     ApiService apiService = ApiClient.getClient().create(ApiService.class);
+    int display = 0;
 
 
     @Override
@@ -136,6 +137,7 @@ public class NoteContentActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_content);
         Intent intent = getIntent();
+        display = intent.getIntExtra("display", 0);
 
         mContainer = findViewById(R.id.container);
         mTitleEdit = findViewById(R.id.title_edit_view);
@@ -1027,6 +1029,7 @@ public class NoteContentActivity extends AppCompatActivity
                                                                             // 回到主界面
                                                                             Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
                                                                             intent.putExtra("category_id", category_id);
+                                                                            intent.putExtra("display", display);
                                                                             progressDialog.dismiss();
                                                                             startActivity(intent);
                                                                         }
@@ -1042,6 +1045,7 @@ public class NoteContentActivity extends AppCompatActivity
                                                                 // 回到主界面
                                                                 Intent intent = new Intent(NoteContentActivity.this, NoteActivity.class);
                                                                 intent.putExtra("category_id", category_id);
+                                                                intent.putExtra("display", display);
                                                                 startActivity(intent);
                                                                 Toast.makeText(NoteContentActivity.this, "Kimi大模型返回错误", Toast.LENGTH_LONG).show();
                                                                 progressDialog.dismiss();

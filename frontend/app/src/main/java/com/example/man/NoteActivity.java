@@ -92,6 +92,7 @@ public class NoteActivity extends AppCompatActivity
     private final int CHANGE_CATEGORY = 2;
     private ApiService apiService;
     GridSpacingItemDecoration itemDecoration = new GridSpacingItemDecoration(2, 50, false);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +100,7 @@ public class NoteActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         categoryId = intent.getIntExtra("category_id", -1);
+        display = intent.getIntExtra("display", 0);
 
         // 设置初始类别
         data.add(new Category(-1, "收集箱"));
@@ -117,7 +119,6 @@ public class NoteActivity extends AppCompatActivity
         call.enqueue(new Callback<GetCategoriesResponse>() {
             @Override
             public void onResponse(Call<GetCategoriesResponse> call, Response<GetCategoriesResponse> response) {
-                display = 0;
                 data.addAll(response.body().getCategories());
                 // 设置侧边栏按钮的ICON
                 sidebarButton = findViewById(R.id.sidebar_button);
@@ -152,9 +153,15 @@ public class NoteActivity extends AppCompatActivity
 
                 // 设置笔记显示方式按钮的ICON
                 displayButton = findViewById(R.id.display_button);
-                icon = getResources().getDrawable(R.drawable.list_icon);
-                icon.setBounds(0, 0, 70, 70);
-                displayButton.setCompoundDrawables(icon, null, null, null);
+                if (display == 0) {
+                    icon = getResources().getDrawable(R.drawable.list_icon);
+                    icon.setBounds(0, 0, 70, 70);
+                    displayButton.setCompoundDrawables(icon, null, null, null);
+                } else if (display == 1) {
+                    icon = getResources().getDrawable(R.drawable.grid_icon);
+                    icon.setBounds(0, 0, 70, 70);
+                    displayButton.setCompoundDrawables(icon, null, null, null);
+                }
                 // 设置笔记显示方式按钮的点击逻辑
                 displayButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -243,7 +250,15 @@ public class NoteActivity extends AppCompatActivity
                 noteInfo.addAll(response.body().getNoteInfo());
                 noteListAdapter = new NoteListAdapter(NoteActivity.this, noteInfo, NoteActivity.this, NoteActivity.this);
                 noteRecyclerView.setAdapter(noteListAdapter);
-                noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
+                if (display == 0) {
+                    noteRecyclerView.removeItemDecoration(itemDecoration);
+                    noteListAdapter.setGrid(false);
+                    noteRecyclerView.setLayoutManager(new LinearLayoutManager(NoteActivity.this));
+                } else if (display == 1) {
+                    noteRecyclerView.addItemDecoration(itemDecoration);
+                    noteListAdapter.setGrid(true);
+                    noteRecyclerView.setLayoutManager(new GridLayoutManager(NoteActivity.this, 2));
+                }
             }
 
             @Override
@@ -333,7 +348,6 @@ public class NoteActivity extends AppCompatActivity
                 return false;
             }
         });
-        // TODO:和点击item会不会有冲突？
         noteRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -360,6 +374,7 @@ public class NoteActivity extends AppCompatActivity
         intent.putExtra("last_modified", noteInfo.get(position).time);
         intent.putExtra("title", noteInfo.get(position).title);
         intent.putExtra("not_saved", false);
+        intent.putExtra("display", display);
         startActivity(intent);
     }
 
@@ -389,6 +404,7 @@ public class NoteActivity extends AppCompatActivity
                 intent.putExtra("last_modified", response.body().getTime());
                 intent.putExtra("title", "未命名");
                 intent.putExtra("not_saved", true);
+                intent.putExtra("display", display);
                 startActivity(intent);
             }
 
