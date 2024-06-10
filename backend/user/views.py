@@ -170,7 +170,7 @@ class GetEmotionView(APIView):
             completion = client.chat.completions.create(
                 model="moonshot-v1-8k",
                 messages=[
-                    {"role": "user", "content": f"用一个词概括以下整段文本的情感：{request.data['prompt']}，你的回答只能包含一个表达情感的词语，不超过四个字"}
+                    {"role": "user", "content": f"用一个词概括以下整段文本的情感：{request.data['prompt']}，你的回答只能包含一个表达情感的词语，不超过四个字，并且你的回答不能包含标点符号"}
                 ],
                 temperature=0.3,
             )
