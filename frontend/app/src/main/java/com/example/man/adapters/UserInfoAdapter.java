@@ -236,11 +236,11 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
                 break;
             case SET_INFO_EMAIL:
                 dialogTextView.setText("设置邮箱");
-                checkTextInput.setHint("请输入邮箱");
+                editTextInput.setHint("请输入邮箱");
                 break;
             case SET_INFO_PHONE:
                 dialogTextView.setText("设置手机号");
-                checkTextInput.setHint("请输入手机号");
+                editTextInput.setHint("请输入手机号");
                 break;
             case MODIFY_INFO_EMAIL:
                 dialogTextView.setText("修改邮箱");

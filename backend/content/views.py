@@ -82,10 +82,10 @@ class DeleteNoteContentsView(APIView):
             Content.objects.filter(note=note).delete()
 
             # 删除对应的文件夹
-            image_path = os.path.join(f'/media/images/note_images/{note_id}')
+            image_path = os.path.join(settings.MEDIA_ROOT, 'images', 'note_images', f'{id}')
             if os.path.isdir(image_path):
                 shutil.rmtree(image_path)
-            audio_path = os.path.join(f'/media/audios/note_audios/{note_id}')
+            audio_path = os.path.join(settings.MEDIA_ROOT, 'audios', 'audios', f'{id}')
             if os.path.isdir(audio_path):
                 shutil.rmtree(audio_path)
 

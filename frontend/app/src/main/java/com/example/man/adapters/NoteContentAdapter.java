@@ -150,7 +150,7 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextTypeViewHolder(View itemView, final OnItemClickListener listener) {
             super(itemView);
             editText = itemView.findViewById(R.id.text_content_edit);
-            editText.setListener(mItemListener);
+            editText.setListener(mItemListener, listener);
 
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -172,21 +172,16 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            listener.onItemClick(position);
-                        }
-                    }
                     editText.show();
                 }
             });
+
         }
 
         void bind(NoteContent noteContent) {
-
             editText.setText(noteContent.getContent());
             editText.setTextView(noteContent.getContent());
+            editText.setPosition(getAdapterPosition());
         }
 
     }
@@ -208,15 +203,17 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             deleteButton = itemView.findViewById(R.id.delete_button);
             replaceButton = itemView.findViewById(R.id.replace_button);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
-                public void onClick(View v) {
+                public boolean onTouch(View v, MotionEvent event) {
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             listener.onItemClick(position);
                         }
                     }
+                    itemView.performClick();
+                    return false;
                 }
             });
 
@@ -325,15 +322,17 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             deleteAudioButton = itemView.findViewById(R.id.delete_audio_button);
             replaceAudioButton = itemView.findViewById(R.id.replace_audio_button);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
+            itemView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
-                public void onClick(View v) {
+                public boolean onTouch(View v, MotionEvent event) {
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
                             listener.onItemClick(position);
                         }
                     }
+                    itemView.performClick();
+                    return false;
                 }
             });
 

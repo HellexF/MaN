@@ -23,7 +23,9 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
     private TextView textView;
     private boolean isTextViewVisible = false;
     private boolean isDetached = false;
+    private int position;
     private NoteContentAdapter.OnItemViewClickListener mListener;
+    private NoteContentAdapter.OnItemClickListener itemClickListener;
     private ViewTreeObserver.OnGlobalLayoutListener keyboardListener;
 
 
@@ -71,6 +73,7 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
                 }
                 else {
                     mListener.onItemViewClick(NoteEditText.this);
+                    itemClickListener.onItemClick(position);
                     imm.showSoftInput(v, 0);
                 }
             }
@@ -107,8 +110,13 @@ public class NoteEditText extends androidx.appcompat.widget.AppCompatEditText {
         requestFocus();
     }
 
-    public void setListener(NoteContentAdapter.OnItemViewClickListener listener){
+    public void setListener(NoteContentAdapter.OnItemViewClickListener listener, NoteContentAdapter.OnItemClickListener itemClickListener_){
         this.mListener = listener;
+        this.itemClickListener = itemClickListener_;
+    }
+
+    public void setPosition(int position){
+        this.position = position;
     }
 
     @Override

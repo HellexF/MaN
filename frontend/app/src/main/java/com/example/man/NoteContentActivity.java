@@ -220,7 +220,6 @@ public class NoteContentActivity extends AppCompatActivity
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    hideKeyboard();
                     getWindow().getDecorView().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
 
 
