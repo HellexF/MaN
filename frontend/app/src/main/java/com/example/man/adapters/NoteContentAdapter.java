@@ -375,6 +375,9 @@ public class NoteContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     if (fromUser) {
                         mediaPlayer.seekTo(progress);
+                        if (progress == seekBar.getMax()) {
+                            playPauseButton.setImageResource(R.drawable.play_button);
+                        }
                     }
                 }
 

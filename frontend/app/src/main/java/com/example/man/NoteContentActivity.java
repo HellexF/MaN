@@ -709,6 +709,7 @@ public class NoteContentActivity extends AppCompatActivity
                     startRecord = false;
                     isRecording = false;
                     dialog.dismiss();
+                    handleContent(audioUri, NoteContentAdapter.AUDIO_TYPE);
                 }
             }
         });
