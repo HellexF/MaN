@@ -126,8 +126,9 @@ class ChangeCategoryView(APIView):
         try:
             note_id = data['noteId']
             new_category_name = data['newCategoryName']
+            user_id = data['userId']
             note = Note.objects.get(note_id=note_id)
-            category = Category.objects.get(name=new_category_name)
+            category = Category.objects.get(name=new_category_name, user_id=user_id)
             note.category_id = category.id
             note.save()
             return Response({'message': 'Successful'}, status=status.HTTP_200_OK)

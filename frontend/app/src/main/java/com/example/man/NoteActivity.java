@@ -467,7 +467,7 @@ public class NoteActivity extends AppCompatActivity
                         createNote(data.get(index).getId());
                     }
                     else if (type == CHANGE_CATEGORY) {
-                        Call<ChangeCategoryResponse> call = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText));
+                        Call<ChangeCategoryResponse> call = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText, Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this))));
                         call.enqueue(new Callback<ChangeCategoryResponse>() {
                             @Override
                             public void onResponse(Call<ChangeCategoryResponse> call, Response<ChangeCategoryResponse> response) {
@@ -510,7 +510,7 @@ public class NoteActivity extends AppCompatActivity
                                 // 更新 RecyclerView
                                 adapter.notifyItemInserted(data.size() - 1);
                                 if(type == CHANGE_CATEGORY){
-                                    Call<ChangeCategoryResponse> call1 = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText));
+                                    Call<ChangeCategoryResponse> call1 = apiService.changeCategory(new ChangeCategoryRequest(noteInfo.get(position).id, inputText, Integer.parseInt(SharedPreferencesManager.getUserId(NoteActivity.this))));
                                     call1.enqueue(new Callback<ChangeCategoryResponse>() {
                                         @Override
                                         public void onResponse(Call<ChangeCategoryResponse> call, Response<ChangeCategoryResponse> response) {
@@ -544,6 +544,9 @@ public class NoteActivity extends AppCompatActivity
                                 }
                                 else if(type == SET_CATEGORY){
                                     createNote(data.get(data.size() - 1).getId());
+                                    dialog.dismiss();
+                                }
+                                else if (type == CREATE_CATEGORY) {
                                     dialog.dismiss();
                                 }
                             }
