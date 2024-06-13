@@ -127,53 +127,31 @@ public class UserInfoAdapter extends ArrayAdapter<String> {
             }
             else {
                 convertView = inflater.inflate(R.layout.user_info_list_item, parent, false);
-
-                String info = getItem(position);
-                Button modfiyButton = convertView.findViewById(R.id.modify_button);
-
-                if (info != null) {
-                    TextView infoTextView = convertView.findViewById(R.id.info_text_view);
-
-                    if (infoTextView != null) {
-                        infoTextView.setText(info);
-                        Button modifyButton = convertView.findViewById(R.id.modify_button);
-
-                        if (info.endsWith("未设置") && position > 1 && position < 5) {
-                            modifyButton.setText("设置");
-                        }
-                        else {
-                            modifyButton.setText("修改");
-                        }
-                    }
-                }
-
-                modfiyButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showInputDialog(convertPosToType(position));
-                    }
-                });
             }
         }
-        else {
-            // 不为空时，不需要重新渲染view，但要更改已有内容
+
+        if (viewType == VIEW_TYPE_INFO) {
             String info = getItem(position);
+            Button modifyButton = convertView.findViewById(R.id.modify_button);
 
             if (info != null) {
                 TextView infoTextView = convertView.findViewById(R.id.info_text_view);
-
                 if (infoTextView != null) {
                     infoTextView.setText(info);
-                    Button modifyButton = convertView.findViewById(R.id.modify_button);
-
                     if (info.endsWith("未设置") && position > 1 && position < 5) {
                         modifyButton.setText("设置");
-                    }
-                    else {
+                    } else {
                         modifyButton.setText("修改");
                     }
                 }
             }
+
+            modifyButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showInputDialog(convertPosToType(position));
+                }
+            });
         }
 
         return convertView;
