@@ -612,6 +612,7 @@ public class NoteContentActivity extends AppCompatActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         final AlertDialog dialog = builder.create();
+        dialog.setCanceledOnTouchOutside(false);
 
         Button buttonRetry = dialogView.findViewById(R.id.record_button_retry);
         Button buttonRecord = dialogView.findViewById(R.id.record_button_record);
