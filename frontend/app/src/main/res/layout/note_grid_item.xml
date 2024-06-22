@@ -7,7 +7,7 @@
 
     <ImageView
         android:id="@+id/list_note_image"
-        android:layout_width="100dp"
+        android:layout_width="match_parent"
         android:layout_height="100dp"
         android:src="@drawable/default_note_item"
         android:padding="5dp"
